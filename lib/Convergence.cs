@@ -1,6 +1,6 @@
-﻿using ConvergenceLib.Interfaces;
+﻿using ConvergenceLib;
+using ConvergenceLib.Interfaces;
 using ConvergenceLib.IO.EPICS;
-using IOCL;
 
 namespace TestIOCL
 {
