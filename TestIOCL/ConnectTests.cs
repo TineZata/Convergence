@@ -1,21 +1,28 @@
+using FluentAssertions;
 using IOCL;
 
 namespace TestIOCL
 {
     public class Tests
     {
-        private IIOConvergenceApi api; 
-        [SetUp]
-        public void Setup()
+
+        // Test for ConvergenceLib.IO.EPICS.Settings is set correctlty for EPICS Channel Access, a valid Guid is returned.
+        [Test]
+        public void Connect_ValidParameters_for_EPICS_CA_ReturnsSession()
         {
-            api = new IOConvergenceApiImp();
+            var settings = new ConvergenceLib.IO.EPICS.Settings(isPVA: false);
+            var args = new EndPointBase<ConvergenceLib.IO.EPICS.Settings> { Settings = settings };
+            var result = Convergence.Hub.Connect(Protocols.EPICS, "Test:PV", args);
+            result.Should().NotBe(Guid.Empty);
         }
 
-        [Test]
-        public void Connect_ValidParameters_ReturnsSessionId()
+        // Test for ConvergenceLib.IO.EPICS.Settings is set correctlty for EPICS PV Access, a valid Guid is returned.
+        public void Connect_ValidParameters_for_EPICS_PVA_ReturnsSession()
         {
-            var settings = new EpicsCaSettings();
-            var args = new EndPointBase<EpicsCaSettings> { Settings = settings };
+            var settings = new ConvergenceLib.IO.EPICS.Settings(isPVA: true);
+            var args = new EndPointBase<ConvergenceLib.IO.EPICS.Settings> { Settings = settings };
+            var result = Convergence.Hub.Connect(Protocols.EPICS, "Test:PVA", args);
+            result.Should().NotBe(Guid.Empty);
         }
     }
 }

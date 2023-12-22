@@ -1,0 +1,36 @@
+﻿using ConvergenceLib.Interfaces;
+using ConvergenceLib.IO.EPICS;
+using IOCL;
+
+namespace TestIOCL
+{
+    public class Convergence : IConvergence
+    {
+        // Singleton instance of Convergence.
+        private static Convergence _hub;
+
+        /// <summary>
+        /// Network communication hub, which keeps track of all the connections on all protocols.
+        /// 
+        /// Must be a singleton because network communication is an expensive resource and we don't want to have multiple instances of it.
+        /// </summary>
+        public static Convergence Hub
+        {
+            get
+            {
+                if (_hub == null)
+                {
+                    _hub = new Convergence();
+                }
+                return _hub;
+            }
+        }
+        // Private constructor for singleton, to prevent external instantiation.
+        private Convergence() { }
+        
+        public Guid Connect(Protocols protocol, string channelId, EndPointBase<Settings> endPointArgs)
+        {
+            return Guid.Empty;
+        }
+    }
+}

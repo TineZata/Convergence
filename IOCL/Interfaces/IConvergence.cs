@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IOCL;
 
-namespace IOCL
+namespace ConvergenceLib.Interfaces
 {
-    public interface IIOConvergenceApi
+    public interface IConvergence
     {
         /// <summary>
         /// Establish a connection and return a Guid.
@@ -17,6 +18,6 @@ namespace IOCL
         /// <param name="channelId"></param>
         /// <param name="endPointArgs"></param>
         /// <returns>Guid</returns>
-        Guid Connect(Protocols protocol, string channelId, EndPointBase<object> endPointArgs);
+        Guid Connect(Protocols protocol, string channelId, EndPointBase<ConvergenceLib.IO.EPICS.Settings> endPointArgs);
     }
 }
