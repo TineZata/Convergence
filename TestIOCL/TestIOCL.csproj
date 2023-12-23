@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\lib\ConvergenceLib.csproj" />
+    <ProjectReference Include="..\lib\Convergence.csproj" />
   </ItemGroup>
 
 </Project>

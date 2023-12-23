@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConvergenceLib.IO.EPICS
+namespace Convergence.IO.EPICS
 {
     /// <summary>
     /// Settings for EPICS protocol.
@@ -17,9 +17,18 @@ namespace ConvergenceLib.IO.EPICS
         /// True if the protocol is PVA.
         /// </summary>
         public bool IsPVA { get; set; }
-        public Settings(bool isPVA)
+
+        /// <summary>
+        /// True if the protocol is server.
+        /// A server would contain db records, while a client would not.
+        /// </summary>
+        public bool IsServer { get; set; }
+
+        public Settings(bool isPVA, bool isServer)
         {
             IsPVA = isPVA;
+            IsServer = isServer;
+
         }
     }
 }

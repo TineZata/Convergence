@@ -1,4 +1,4 @@
-﻿namespace ConvergenceLib
+﻿namespace Convergence
 {
     public enum Protocols
     {

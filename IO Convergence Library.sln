@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestIOCL", "TestIOCL\TestIOCL.csproj", "{AB45674C-8982-4AD9-BFFD-F090181BF6D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConvergenceLib", "lib\ConvergenceLib.csproj", "{357EDE2C-AA90-460E-B982-A5C5CD2D13BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Convergence", "lib\Convergence.csproj", "{357EDE2C-AA90-460E-B982-A5C5CD2D13BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

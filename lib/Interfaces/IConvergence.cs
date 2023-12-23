@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConvergenceLib.Interfaces
+namespace Convergence.Interfaces
 {
     public interface IConvergence
     {
@@ -17,10 +17,10 @@ namespace ConvergenceLib.Interfaces
         /// <param name="channelId"></param>
         /// <param name="endPointArgs"></param>
         /// <returns>Guid</returns>
-        Guid Connect(Protocols protocol, string channelId, EndPointBase<ConvergenceLib.IO.EPICS.Settings> endPointArgs);
+        Guid Connect(Protocols protocol, string channelId, EndPointBase<Convergence.IO.EPICS.Settings> endPointArgs);
 
 
         // Establish a Tango connection and return a Guid.
-        Guid Connect(Protocols protocol, string channelId, EndPointBase<ConvergenceLib.IO.Tango.Settings> endPointArgs);
+        Guid Connect(Protocols protocol, string channelId, EndPointBase<Convergence.IO.Tango.Settings> endPointArgs);
     }
 }

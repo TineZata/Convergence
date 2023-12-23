@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConvergenceLib.IO.Tango
+namespace Convergence.IO.Tango
 {
     /// <summary>
     /// Settings for Tango protocol.
