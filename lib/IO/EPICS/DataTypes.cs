@@ -62,30 +62,30 @@ namespace Convergence.IO.EPICS
         /// <summary>
         /// string of up to 39 characters
         /// </summary>
-        DBF_STRING,
+        CA_DBF_STRING,
         /// <summary>
         /// 8-bit unsigned integer
         /// </summary>
-        DBF_CHAR,
+        CA_DBF_CHAR,
         /// <summary>
         /// 16-bit signed integer
         /// </summary>
-        DBF_SHORT,
+        CA_DBF_SHORT,
         /// <summary>
         /// 32-bit signed integer
         /// </summary>
-        DBF_LONG,
+        CA_DBF_LONG,
         /// <summary>
         /// single precision floating point, 32 bits
         /// </summary>
-        DBF_FLOAT,
+        CA_DBF_FLOAT,
         /// <summary>
         /// double precision floating point, 64 bits
         /// </summary>
-        DBF_DOUBLE,
+        CA_DBF_DOUBLE,
         /// <summary>
         /// enumerated value with up to 16 options
         /// </summary>
-        DBF_ENUM
+        CA_DBF_ENUM
     }
 }

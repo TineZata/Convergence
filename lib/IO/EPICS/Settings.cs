@@ -24,11 +24,29 @@ namespace Convergence.IO.EPICS
         /// </summary>
         public bool IsServer { get; set; }
 
-        public Settings(bool isPVA, bool isServer)
+        /// <summary>
+        /// The data type.
+        /// </summary>
+        public DataTypes DataType { get; set; }
+
+        /// <summary>
+        /// Number of elements.
+        /// Greater than 1 if array.
+        /// </summary>
+        public int ElementCount { get; set; } = 1;
+
+        /// <summary>
+        /// Description of the PV.
+        /// </summary>
+        string ? Description { get; set; }
+
+
+        public Settings(bool isPVA, bool isServer, DataTypes datatype, int elementCount, string ? description)
         {
             IsPVA = isPVA;
             IsServer = isServer;
-
+            DataType = datatype;
+            ElementCount = elementCount;
         }
     }
 }

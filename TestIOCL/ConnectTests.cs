@@ -10,7 +10,7 @@ namespace TestIOCL
         [Test]
         public void Connect_ValidParameters_for_EPICS_CA_ReturnsSession()
         {
-            var settings = new global::Convergence.IO.EPICS.Settings(isPVA: false);
+            var settings = new global::Convergence.IO.EPICS.Settings(isPVA: false, isServer: false, datatype: global::Convergence.IO.EPICS.DataTypes.CA_DBF_SHORT);
             var args = new EndPointBase<global::Convergence.IO.EPICS.Settings> { Settings = settings };
             var result = Convergence.Hub.Connect(Protocols.EPICS, "Test:PV", args);
             result.Should().NotBe(Guid.Empty);
