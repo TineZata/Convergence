@@ -191,11 +191,17 @@ namespace Convergence.IO.EPICS
             );
         }
 
-        public static void ca_clear_channel(ChannelHandle channel)
+        public static EcaType ca_clear_channel(IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_clear_channel(channel).VerifyEcaSuccess();
-            channel.SetAsNull();
+            if (Enum.TryParse<EcaType>(ca_clear_channel(pChanID).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_clear_channel: Unable to cast EcaType from Int32");
+            }
+            
             [DllImport(CA_DLL_NAME)]
             // Shutdown and reclaim resources associated with
             // a channel created by ca_create_channel().
@@ -210,21 +216,19 @@ namespace Convergence.IO.EPICS
         // CHANNEL STATE
         // -------------
 
-        public static ChannelStateQueryResult ca_state(this ChannelHandle channel)
+        public static ChannelState ca_state(IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return ca_state(channel);
+            return ca_state(pChanID);
             [DllImport(CA_DLL_NAME)]
             // Returns an enumerated type indicating the current state of the specified IO channel.
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_state
-            static extern ChannelStateQueryResult ca_state(IntPtr pChanID);
+            static extern ChannelState ca_state(IntPtr pChanID);
         }
 
-        public static string ca_host_name(this ChannelHandle channel)
+        public static string ca_host_name(IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
             return Marshal.PtrToStringAnsi(
-              ca_host_name(channel.Value)
+              ca_host_name(pChanID)
             )!;
             // NOTE : THIS IS NOT THREAD SAFE !!!!
             // BETTER TO USE 'ca_get_host_name' !!!!!!
@@ -239,20 +243,26 @@ namespace Convergence.IO.EPICS
         // GET AND PUT 
         // -----------
 
-        public unsafe static void ca_array_get(
-          this ChannelHandle channel,
+        public unsafe static EcaType ca_array_get(
+          this IntPtr pChanID,
           DbRecordRequestType dbrType,
           int nElementsOfThatTypeWanted,
           void* pMemoryAllocatedToHoldDbrStruct
         )
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_array_get(
+            if (Enum.TryParse<EcaType>(ca_array_get(
               (short)dbrType,
               (uint)nElementsOfThatTypeWanted,
-              channel,
+              pChanID,
               (System.IntPtr)pMemoryAllocatedToHoldDbrStruct
-            ).VerifyEcaSuccess();
+            ).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_array_get: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Read a scalar or array value from a process variable.
             // The returned channel value can't be assumed to be stable in the application supplied buffer
@@ -278,22 +288,28 @@ namespace Convergence.IO.EPICS
             );
         }
 
-        public static void ca_array_get_callback(
-          this ChannelHandle channel,
+        public static EcaType ca_array_get_callback(
+          this IntPtr pChanID,
           DbRecordRequestType type,
           int nElementsWanted,
           ValueUpdateCallback valueUpdateCallBack,
           IntPtr userArg
         )
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_array_get_callback(
+            if (Enum.TryParse<EcaType>(ca_array_get_callback(
               (Int16)type,
               (UInt32)nElementsWanted,
-              channel,
+              pChanID,
               valueUpdateCallBack,
               userArg
-            ).VerifyEcaSuccess();
+            ).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_array_get_callback: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Read a scalar or array value from a process variable.
             // A value is read from the channel and then the user's callback is invoked with a pointer to the retrieved value. 
@@ -328,19 +344,26 @@ namespace Convergence.IO.EPICS
         // NOTE THAT 'count' SHOULD BE NO GREATER THAN
         // THE AVAILABLE NUMBER OF ELEMENTS ...
 
-        public static unsafe void ca_array_put(
-          this ChannelHandle channel,
-          DbFieldDescriptor dbFieldDescriptor,
+        public static unsafe EcaType ca_array_put(
+          this IntPtr pChanID,
+          DbRecordRequestType dbrType,
+          int nElementsOfThatTypeWanted,
           void* pValueToWrite // New channel value is copied from here
         )
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_array_put(
-              (short)dbFieldDescriptor.DbFieldType,
-              (uint)dbFieldDescriptor.ElementsCountOnServer,
-              channel,
+            if (Enum.TryParse<EcaType>(ca_array_put(
+              (short)dbrType,
+              (uint)nElementsOfThatTypeWanted,
+              pChanID,
               (IntPtr)pValueToWrite   // New channel value is copied from here
-            ).VerifyEcaSuccess();
+            ).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_array_put: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Write a scalar or array value to a process variable.
             // The client will receive no response unless the request can not be fulfilled in the server.
@@ -368,23 +391,30 @@ namespace Convergence.IO.EPICS
         // NOTE THAT 'count' SHOULD BE NO GREATER THAN
         // THE AVAILABLE NUMBER OF ELEMENTS ...
 
-        public unsafe static void ca_array_put_callback(
-          this ChannelHandle channel,
-          DbFieldDescriptor dbFieldDescriptor,
+        public unsafe static EcaType ca_array_put_callback(
+          this IntPtr pChanID,
+          DbRecordRequestType dbrType,
+          int nElementsOfThatTypeWanted,
           void* pValueToWrite,       // New channel value is copied from here
           ValueUpdateCallback valueUpdateCallback, // Event will be raised when successful write is confirmed
           int userArg
         )
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_array_put_callback(
-              (short)dbFieldDescriptor.DbFieldType,
-              (uint)dbFieldDescriptor.ElementsCountOnServer,
-              channel,
+            if (Enum.TryParse<EcaType>(ca_array_put_callback(
+              (short)dbrType,
+              (uint)nElementsOfThatTypeWanted,
+              pChanID,
               (IntPtr)pValueToWrite, // New value is copied from here
               valueUpdateCallback, // Event will be raised when successful write is confirmed
               (IntPtr)userArg
-            ).VerifyEcaSuccess();
+            ).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_array_put_callback: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // This routine functions identically to the original 'ca_put' request 
             // with the addition of a callback to the user-supplied function 
@@ -424,8 +454,8 @@ namespace Convergence.IO.EPICS
         // SUBSCRIPTIONS
         // -------------
 
-        public static SubscriptionHandle ca_create_subscription(
-          this ChannelHandle channel,
+        public unsafe static IntPtr ca_create_subscription(
+          this IntPtr pChanID,
           DbRecordRequestType dbrType,
           int count,
           WhichFieldsToMonitor whichFieldsToMonitor,
@@ -433,16 +463,22 @@ namespace Convergence.IO.EPICS
           int userArg
         )
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_create_subscription(
+            if (Enum.TryParse<EcaType>(ca_create_subscription(
               (short)dbrType,  // DBR_xxx
               (uint)count,
-              channel,
+              pChanID,
               (uint)whichFieldsToMonitor,
               valueUpdateCallback,
               (System.IntPtr)userArg,
-              out var pEvid
-            ).VerifyEcaSuccess();
+              out IntPtr pEvid
+            ).ToString(), out EcaType result))
+            {
+                return pEvid;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_create_subscription: Unable to cast EcaType from Int32");
+            }
             return pEvid;
             [DllImport(CA_DLL_NAME)]
             // Register a state change subscription and specify a callback function
