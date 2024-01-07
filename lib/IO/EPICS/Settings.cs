@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Convergence.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace Convergence.IO.EPICS
     /// 
     /// EPICS only requires the distintion between CA and PVA.
     /// </summary>
-    public class Settings
+    public class Settings : ISettings
     {
         /// <summary>
         /// True if the protocol is PVA.

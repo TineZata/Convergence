@@ -2,6 +2,7 @@
 {
     public enum Protocols
     {
+        None,
         EPICS,
         Tango,
         MODBUS,

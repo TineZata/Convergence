@@ -9,5 +9,6 @@ namespace Convergence
     public class EndPointBase<TSettings>
     {
         public TSettings Settings { get; set; }
+        public EndPointID Id { get; }
     }
 }
