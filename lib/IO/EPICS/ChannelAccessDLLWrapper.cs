@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Conversion.IO.EPICS;
 using FluentAssertions;
 
 namespace Convergence.IO.EPICS
@@ -508,11 +509,16 @@ namespace Convergence.IO.EPICS
             );
         }
 
-        public static void ca_clear_subscription(this SubscriptionHandle subscription)
+        public static EcaType ca_clear_subscription(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            subscription.IsValidHandle.Should().BeTrue();
-            ca_clear_subscription(subscription).VerifyEcaSuccess();
+            if (Enum.TryParse<EcaType>(ca_clear_subscription(pChanID).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_clear_subscription: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Cancel a subscription.
             // Returns
@@ -526,10 +532,16 @@ namespace Convergence.IO.EPICS
         // FLUSH_IO etc
         // ------------
 
-        public static void ca_flush_io()
+        public static EcaType ca_flush_io()
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_flush_io().VerifyEcaSuccess();
+            if (Enum.TryParse<EcaType>(ca_flush_io().ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_flush_io: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Flush outstanding IO requests to the server.
             // Returns
@@ -538,35 +550,18 @@ namespace Convergence.IO.EPICS
             static extern Int32 ca_flush_io();
         }
 
-        // BETTER NAME : AllReadRequestsCompleted_AfterBlockingWaitOfAtMost
 
-        private static volatile bool g_ca_pend_io_call_in_progress = false;
-
-        public static bool ca_pend_io(double timeOut_secs_zeroMeansInfinite)
+        public static EcaType ca_pend_io(double timeOut_secs_zeroMeansInfinite)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            g_ca_pend_io_call_in_progress.Should().BeFalse();
-            g_ca_pend_io_call_in_progress = true;
-            ApiCallResult ecaResult = ca_pend_io(timeOut_secs_zeroMeansInfinite);
-            g_ca_pend_io_call_in_progress = false;
-            if (ecaResult.MessageNumber == EcaType.ECA_MESSAGE_TIMEOUT)
+            if (Enum.TryParse<EcaType>(ca_pend_io(timeOut_secs_zeroMeansInfinite).ToString(), out EcaType result))
             {
-                return false;
+                return result;
             }
-            // else if ( ecaResult.MessageNumber == EcaMessage.ECA_MESSAGE_EVDISALLOW )
-            // {
-            //   return false ;
-            // }
             else
             {
-                //if ( ecaResult.MessageNumber == EcaMessage.ECA_MESSAGE_EVDISALLOW )
-                //{
-                //  // Can put a breakpoint here ...
-                //  int x = 0 ;
-                //}
-                ecaResult.VerifySuccess();
-                return true;
+                throw new InvalidCastException("ca_pend_io: Unable to cast EcaType from Int32");
             }
+            
             [DllImport(CA_DLL_NAME)]
             // Flushes the send buffer and then blocks until outstanding ca_get() requests complete.
             // Returns
@@ -577,24 +572,16 @@ namespace Convergence.IO.EPICS
             static extern Int32 ca_pend_io(double timeOut_secs_zeroMeansInfinite);
         }
 
-        // Returns true if all I/O requests are complete
-
-        // BETTER NAME : AllReadRequestsHaveCompleted
-        // This is not called, and may be dangerous ??
-
-        public static bool ca_test_io()
+        public static EcaType ca_test_io()
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ApiCallResult ecaResult = ca_test_io();
-            var messageCode = ecaResult.MessageNumber;
-            return messageCode switch
+            if (Enum.TryParse<EcaType>(ca_test_io().ToString(), out EcaType result))
             {
-                EcaType.ECA_MESSAGE_IODONE => true,
-                EcaType.ECA_MESSAGE_IOINPROGRESS => false,
-                _ => throw new UnexpectedConditionException(
-                       ecaResult.GetExceptionMessage("ca_test_io")
-                     )
-            };
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_test_io: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Tests to see if all ca_get() requests are complete.
             // Returns
@@ -604,13 +591,17 @@ namespace Convergence.IO.EPICS
             static extern Int32 ca_test_io();
         }
 
-        // BETTER NAME : BlockWaitingForMonitorEvents 
-        // This is not called, and may be dangerous ??
-
-        public static void ca_pend_event(double nSecsToBlock_zeroMeansInfinite)
+        public static EcaType ca_pend_event(double nSecsToBlock_zeroMeansInfinite)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_pend_event(nSecsToBlock_zeroMeansInfinite).VerifyEcaSuccess();
+
+            if (Enum.TryParse<EcaType>(ca_pend_event(nSecsToBlock_zeroMeansInfinite).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_pend_event: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Wait for channel subscription events and call the functions
             // specified with add_event when events occur.
@@ -637,20 +628,25 @@ namespace Convergence.IO.EPICS
 
         // This tells us the *max* number of elements that the server will deal with.
 
-        public static int ca_element_count(this ChannelHandle channel)
+        public static UInt32 ca_element_count(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return (int)ca_element_count(channel);
+            return ca_element_count(pChanID);
             [DllImport(CA_DLL_NAME)]
             // Returns the maximum array element count in the server for the specified channel.
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_element_count
             static extern UInt32 ca_element_count(IntPtr pChanID);
         }
 
-        public static DbFieldType ca_field_type(this ChannelHandle channel)
+        public static DbFieldType ca_field_type(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return ca_field_type(channel).AsEnumType<DbFieldType>();
+            if (Enum.TryParse<DbFieldType>(ca_field_type(pChanID).ToString(), out DbFieldType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_field_type: Unable to cast DbFieldType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // Returns the native 'field type' in the server of the process variable.
             // The returned code will be one of the DBF_ values, or 'DBF_NO_ACCESS'
