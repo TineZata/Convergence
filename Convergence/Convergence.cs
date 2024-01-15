@@ -1,6 +1,5 @@
 ﻿using Convergence;
 using Convergence.Interfaces;
-using Convergence.IO.EPICS;
 
 namespace TestIOCL
 {
