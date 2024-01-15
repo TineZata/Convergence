@@ -100,9 +100,6 @@
         ECA_UNRESPTMO = 60
     }
 
-
-    
-
   // ?? There are lots of other ECA_ return codes
   // https://epics.anl.gov/EpicsDocumentation/AppDevManuals/ChannelAccess/cadoc_6.htm#MARKER-9-121
   //
@@ -179,5 +176,4 @@
   // For example ca_test_io() can return ECA_IODONE or ECA_IOINPROGRESS
   // BEST TO DEFINE THESE AS INTEGER CODES HERE ???
   // Note - a client might receive 'defunct' codes from an old IOC !!!
-
 }

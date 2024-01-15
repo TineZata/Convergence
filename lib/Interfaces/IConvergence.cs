@@ -13,10 +13,9 @@ namespace Convergence.Interfaces
         /// 
         /// If a connection already exists, the Guid for the concerned connection is returned otherwise a new
         /// </summary>
-        /// <param name="protocol"></param>
         /// <param name="id"></param>
         /// <param name="endPointArgs"></param>
         /// <returns>Guid</returns>
-        EndPointID Connect(Protocols protocol, EndPointID id, EndPointBase<ISettings> endPointArgs);
+        EndPointID Connect<T>(EndPointID id, EndPointBase<T> endPointArgs);
     }
 }

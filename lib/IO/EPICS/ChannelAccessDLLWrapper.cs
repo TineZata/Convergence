@@ -656,41 +656,14 @@ namespace Convergence.IO.EPICS
             static extern Int16 ca_field_type(IntPtr pChanID);
         }
 
-        public static bool ca_has_invalid_field_type(this ChannelHandle channel)
-        {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return ca_field_type(channel) < 0;
-            [DllImport(CA_DLL_NAME)]
-            // Returns the native 'field type' in the server of the process variable.
-            // The returned code will be one of the DBF_ values, or 'DBF_NO_ACCESS'
-            // if the channel is disconnected.
-            // Could the field type have changed, on a reconnect ? Detect that !!!
-            // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_field_type
-            static extern Int16 ca_field_type(IntPtr pChanID);
-        }
-
-        public static bool ca_field_type_reports_no_access(this ChannelHandle channel)
-        {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return ca_field_type(channel) == ChannelAccessConstants.DBF_NO_ACCESS;
-            [DllImport(CA_DLL_NAME)]
-            // Returns the native 'field type' in the server of the process variable.
-            // The returned code will be one of the DBF_ values, or 'DBF_NO_ACCESS'
-            // if the channel is disconnected.
-            // Could the field type have changed, on a reconnect ? Detect that !!!
-            // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_field_type
-            static extern Int16 ca_field_type(IntPtr pChanID);
-        }
-
         // If we have write access, do we always have 'read' access ??
         // Might have a PV where writing anything triggers an action,
         // but the value itself isn't readable ?
         // In that case, we probably need a special FieldType ???
 
-        public static bool ca_read_access(this ChannelHandle channel)
+        public static bool ca_read_access(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return ca_read_access(channel) != 0;
+            return ca_read_access(pChanID) != 0;
             [DllImport(CA_DLL_NAME)]
             // Returns boolean true if the client currently has read access
             // to the specified channel and boolean false otherwise.
@@ -698,10 +671,9 @@ namespace Convergence.IO.EPICS
             static extern Int32 ca_read_access(IntPtr pChanID);
         }
 
-        public static bool ca_write_access(this ChannelHandle channel)
+        public static bool ca_write_access(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return ca_write_access(channel) != 0;
+            return ca_write_access(pChanID) != 0;
             [DllImport(CA_DLL_NAME)]
             // Returns boolean true if the client currently has write access
             // to the specified channel and boolean false otherwise.
@@ -709,11 +681,10 @@ namespace Convergence.IO.EPICS
             static extern Int32 ca_write_access(IntPtr pChanID);
         }
 
-        public static string ca_name(this ChannelHandle channel)
+        public static string ca_name(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
             return Marshal.PtrToStringAnsi(
-              ca_name(channel.Value)
+              ca_name(pChanID)
             )!;
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_name
@@ -722,21 +693,19 @@ namespace Convergence.IO.EPICS
 
         // Get the 'user info tag' associated with the channel
 
-        public static int ca_puser(this ChannelHandle channel)
+        public static IntPtr ca_puser(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return (int)ca_puser(channel);
+            return (int)ca_puser(pChanID);
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_puser
-            static extern IntPtr ca_puser(IntPtr chan);
+            static extern IntPtr ca_puser(IntPtr pChanID);
         }
 
         // Set the 'user info tag' associated with the channel
 
-        public static void ca_set_puser(this ChannelHandle channel, int userInfo)
+        public static void ca_set_puser(this IntPtr pChanID, IntPtr userInfo)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_set_puser(channel, (nint)userInfo);
+            ca_set_puser(pChanID, userInfo);
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_set_puser
             static extern void ca_set_puser(IntPtr chan, IntPtr puser);
@@ -746,10 +715,9 @@ namespace Convergence.IO.EPICS
         // Hmm, this might be useful to know, however the value comes back as a junk value
         // even if we wait until the channel has been successfully connected-to ...
 
-        public static double ca_beacon_period(this ChannelHandle channel)
+        public static double ca_beacon_period(this IntPtr pChanID)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            return ca_beacon_period(channel);
+            return ca_beacon_period(pChanID);
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_beacon_period
             static extern double ca_beacon_period(IntPtr chan);
@@ -757,16 +725,16 @@ namespace Convergence.IO.EPICS
 
         // Replace the default 'exception handler'
 
-        public static void ca_add_exception_event(
-          ExceptionHandlerCallback pExceptionHandlerCallBack,
-          nint userArg
-        )
+        public static EcaType ca_add_exception_event(ExceptionHandlerCallback pExceptionHandlerCallBack, nint userArg)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_add_exception_event(
-              pExceptionHandlerCallBack,
-              userArg
-            ).VerifyEcaSuccess();
+            if (Enum.TryParse<EcaType>(ca_add_exception_event(pExceptionHandlerCallBack, userArg).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_add_exception_event: Unable to cast EcaType from Int32");
+            }
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_add_exception_event
             // This changes 'ca_exception_func' and 'ca_exception_arg'.
@@ -777,10 +745,16 @@ namespace Convergence.IO.EPICS
             );
         }
 
-        public static void ca_replace_printf_handler(PrintfCallback printfCallback)
+        public static EcaType ca_replace_printf_handler(PrintfCallback printfCallback)
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
-            ca_replace_printf_handler(printfCallback).VerifyEcaSuccess();
+            if (Enum.TryParse<EcaType>(ca_replace_printf_handler(printfCallback).ToString(), out EcaType result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_replace_printf_handler: Unable to cast EcaType from Int32");
+            }
             // Replace the 'printf' handler ... ???
             // This is problematic because 'ca_printf_func' 
             // needs to be a pointer to a function with a 'va_list' parameter :
@@ -801,7 +775,6 @@ namespace Convergence.IO.EPICS
 
         public static string ca_version()
         {
-            EnsureCurrentThreadIsAttachedToChannelsHubContext();
             return Marshal.PtrToStringAnsi(
               ca_version()
             )!;

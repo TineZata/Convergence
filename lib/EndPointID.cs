@@ -6,20 +6,25 @@ using System.Threading.Tasks;
 
 namespace Convergence
 {
-    public class EndPointID
+    public class EndPointID(Protocols protocol, Guid id)
     {
+        private string endPointName;
+        private Protocols ePICS;
+        private Guid guid;
+
         public static EndPointID Empty { get; } = new EndPointID(Protocols.None, Guid.Empty);
-        public Protocols Protocol { get; }
-        public Guid Id { get; }
+        public Protocols Protocol { get; } = protocol;
+        public Guid Id { get; } = id;
+        public string EndPointName { get; }
         public override string ToString()
         {
             return $"{nameof(Protocol)}:{Id}";
         }
 
-        public EndPointID(Protocols protocol, Guid id)
+        public EndPointID(Protocols ePICS, Guid guid, string endPointName)
+            : this(ePICS, guid)
         {
-            Protocol = protocol;
-            Id = id;
+            this.endPointName = endPointName;
         }
     }
 }

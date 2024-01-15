@@ -42,12 +42,12 @@ namespace Convergence.IO.EPICS
         string ? Description { get; set; }
 
 
-        public Settings(bool isPVA, bool isServer, DataTypes datatype, int elementCount, string ? description)
+        public Settings(DataTypes datatype, bool isServer, int elementCount, bool isPVA)
         {
-            IsPVA = isPVA;
-            IsServer = isServer;
             DataType = datatype;
+            IsServer = isServer;
             ElementCount = elementCount;
+            IsPVA = isPVA;
         }
     }
 }

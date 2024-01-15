@@ -28,7 +28,7 @@ namespace TestIOCL
         // Private constructor for singleton, to prevent external instantiation.
         private Convergence() { }
         
-        public EndPointID Connect(Protocols protocol, EndPointID id, EndPointBase<ISettings> endPointArgs)
+        public EndPointID Connect<T>(EndPointID id, EndPointBase<T> endPointArgs)
         {
             return EndPointID.Empty;
         }

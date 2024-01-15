@@ -10,18 +10,28 @@ namespace TestIOCL
         [Test]
         public void Connect_ValidParameters_for_EPICS_CA_ReturnsSession()
         {
-            var settings = new Convergence.IO.EPICS.Settings(isPVA: false, isServer: false, datatype: Convergence.IO.EPICS.DataTypes.CA_DBF_SHORT);
-            var args = new EndPointBase<global::Convergence.IO.EPICS.Settings> { Settings = settings };
-            var result = Convergence.Hub.Connect(Protocols.EPICS, "Test:PV", args);
+            var endPointId = new EndPointID(Protocols.EPICS, new Guid(), "Test:PV");
+            var settings = new global::Convergence.IO.EPICS.Settings(
+                datatype: global::Convergence.IO.EPICS.DataTypes.CA_DBF_SHORT, 
+                elementCount: 1, 
+                isServer: false, 
+                isPVA: false);
+            var endPointArgs = new EndPointBase<global::Convergence.IO.EPICS.Settings> { Settings = settings };
+            EndPointID result = Convergence.Hub.Connect(endPointId, endPointArgs);
             result.Should().NotBe(Guid.Empty);
         }
 
         // Test for ConvergenceLib.IO.EPICS.Settings is set correctlty for EPICS PV Access, a valid Guid is returned.
         public void Connect_ValidParameters_for_EPICS_PVA_ReturnsSession()
         {
-            var settings = new Convergence.IO.EPICS.Settings(isPVA: true);
-            var args = new EndPointBase<Convergence.IO.EPICS.Settings> { Settings = settings };
-            var result = Convergence.Hub.Connect(Protocols.EPICS, "Test:PVA", args);
+            var endPointId = new EndPointID(Protocols.EPICS, new Guid(), "Test:PVA");
+            var settings = new global::Convergence.IO.EPICS.Settings(
+                datatype: global::Convergence.IO.EPICS.DataTypes.PVA_int8, 
+                elementCount: 1, 
+                isServer: false, 
+                isPVA: false);
+            var endPointArgs = new EndPointBase<global::Convergence.IO.EPICS.Settings> { Settings = settings };
+            EndPointID result = Convergence.Hub.Connect(endPointId, endPointArgs);
             result.Should().NotBe(Guid.Empty);
         }
     }
