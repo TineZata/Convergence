@@ -81,9 +81,18 @@ namespace Convergence.IO.EPICS
         // CONTEXT
         // -------
 
-        public static IntPtr ca_context_create()
+        public static EcaType ca_context_create(PreemptiveCallbacks preemptive)
         {
-            return new(ca_context_create());
+            if (Enum.TryParse<EcaType>(ca_context_create(preemptive).ToString(), out EcaType result))
+            {
+                var temp = ca_current_context();
+                return result;
+            }
+            else
+            {
+                throw new InvalidCastException("ca_context_create: Unable to cast EcaType from Int32");
+            }
+            [DllImport(CA_DLL_NAME)]
             // This function should be called once from each thread
             // prior to making any of the other Channel Access calls.
             // Returns :
@@ -92,9 +101,10 @@ namespace Convergence.IO.EPICS
             //   ECA_NOTTHREADED - Current thread is already a member
             //                     of a non-preemptive callback CA context
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_context_create
-            [DllImport(CA_DLL_NAME)]
+            
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_current_context
-            static extern IntPtr ca_context_create();
+            static extern Int32 ca_context_create(PreemptiveCallbacks p);
+
         }
 
         // Needed when you invoke a 'ca_' function on a worker thread
@@ -148,17 +158,16 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_create_channel(
           string channelName,
-          ConnectionCallback? connectionCallback,
-          int tagValue,       // can be fetched later by ca_puser() ; passed in ConnectCallback
-          UInt32? priority = null // priority level in the server 0 - 100, default is 0
+          ConnectionCallback connectionCallback,
+          out IntPtr pChannel
         )
         {
             if (Enum.TryParse<EcaType>(ca_create_channel(
                 channelName, 
                 connectionCallback, 
-                (System.IntPtr)tagValue,
-                priority ?? ChannelAccessConstants.CA_PRIORITY_DEFAULT,
-                out var pChannel
+                IntPtr.Zero,
+                ChannelAccessConstants.CA_PRIORITY_DEFAULT,
+                out pChannel
             ).ToString(), out EcaType result
             ))
             {
@@ -188,7 +197,7 @@ namespace Convergence.IO.EPICS
               ConnectionCallback? pConnStateCallback,
               IntPtr pUserPrivate, // can be fetched later by ca_puser() ; passed in 'ConnectCallback'
               UInt32 priority,     // priority level in the server 0 - 100 // put in SETTINGS ???
-              out IntPtr pChanID // was 'ref'
+              out IntPtr pChannel // was 'ref'
             );
         }
 

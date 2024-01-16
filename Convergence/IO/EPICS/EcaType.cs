@@ -2,6 +2,12 @@
 {
     public enum EcaType
     {
+        /*
+         * In the lines below "defunct" indicates that current release 
+         * servers and client library will not return this error code, but
+         * servers on earlier releases that communicate with current clients 
+         * might still generate exceptions with these error constants
+         */
         ECA_NORMAL = 0,       // success
 
         ECA_MAXIOC = 1,      // defunct

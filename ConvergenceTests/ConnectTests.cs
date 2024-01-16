@@ -3,7 +3,7 @@ using Convergence;
 using EPICSSettings = Convergence.IO.EPICS.Settings;
 using EPICSDataTypes = Convergence.IO.EPICS.DataTypes;
 
-namespace TestIOCL
+namespace ConnectTests
 {
     public class Tests
     {
@@ -19,7 +19,7 @@ namespace TestIOCL
                 isServer: false, 
                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { Settings = epicSettings };
-            EndPointID result = Convergence.Hub.Connect(endPointId, endPointArgs);
+            EndPointID result = ConvergenceInstance.Hub.Connect(endPointId, endPointArgs);
             result.Id.Should().NotBe(Guid.Empty);
         }
 
@@ -34,7 +34,7 @@ namespace TestIOCL
                 isServer: false, 
                 isPVA: false);
             var endPointArgs = new EndPointBase<global::Convergence.IO.EPICS.Settings> { Settings = settings };
-            EndPointID result = Convergence.Hub.Connect(endPointId, endPointArgs);
+            EndPointID result = ConvergenceInstance.Hub.Connect(endPointId, endPointArgs);
             result.Id.Should().NotBe(Guid.Empty);
         }
     }
