@@ -34,23 +34,16 @@ namespace Convergence
             switch (id.Protocol)
             {
                 case Protocols.EPICS:
-                    // Create a ca_context_create() and ca_create_channel() for EPICS Channel Access.
-                    switch (EPICSWrapper.ca_context_create(PreemptiveCallbacks.DISABLE))
+                    IntPtr epicsHandle;
+                    // Always call ca_context_create() before any other Channel Access calls
+                    EPICSWrapper.ca_context_create(PreemptiveCallbacks.DISABLE);
+                    switch (EPICSWrapper.ca_create_channel(id.EndPointName, null, out epicsHandle))
                     {
-                        case EcaType.ECA_ALLOCMEM:
-                            break;
-                        case EcaType.ECA_NOTTHREADED:
-                            break;
                         case EcaType.ECA_NORMAL:
-                        default:
-                            // Create a new channel for EPICS Channel Access.
-                            IntPtr epicsHandle;
-                            EPICSWrapper.ca_create_channel(id.EndPointName, null, out epicsHandle);
+                            return new EndPointID(Protocols.EPICS, new Guid());
                             break;
                     }
-                            
-
-                    return EndPointID.Empty;
+                    break;
             }
             return EndPointID.Empty;
         }

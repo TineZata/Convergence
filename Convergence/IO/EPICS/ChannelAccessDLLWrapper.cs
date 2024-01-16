@@ -81,11 +81,59 @@ namespace Convergence.IO.EPICS
         // CONTEXT
         // -------
 
+        public static IntPtr CurrentContext { get; private set; }
+
+        private static void set_current_context()
+        {
+            var context = ca_current_context();
+            // Check if CurrentContext has been created
+            if (CurrentContext == IntPtr.Zero)
+            {
+                ca_attach_context(CurrentContext);
+                // Check if CurrentContext has been created
+                context = ca_current_context();
+                try
+                {
+                    CurrentContext.Should().Be(context);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("CurrentContext is not equal to context", ex);
+                }
+            }
+            // else if CurrentContext is not IntPtr.Zero but not equal to context
+            else if (CurrentContext != ca_current_context())
+            {
+                // Destroy the CurrentContext
+                ca_context_destroy();
+                // Get a new context
+                context = ca_current_context();
+                try
+                {
+                    CurrentContext.Should().Be(context);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("CurrentContext is not equal to context", ex);
+                }
+            }
+            else
+            {
+                // Do nothing
+            }
+        }
+
+        /// <summary>
+        /// This function should be called once from each thread
+        /// prior to making any of the other Channel Access calls.
+        /// </summary>
+        /// <param name="preemptive"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidCastException"></exception>
         public static EcaType ca_context_create(PreemptiveCallbacks preemptive)
         {
             if (Enum.TryParse<EcaType>(ca_context_create(preemptive).ToString(), out EcaType result))
             {
-                var temp = ca_current_context();
                 return result;
             }
             else
@@ -93,8 +141,7 @@ namespace Convergence.IO.EPICS
                 throw new InvalidCastException("ca_context_create: Unable to cast EcaType from Int32");
             }
             [DllImport(CA_DLL_NAME)]
-            // This function should be called once from each thread
-            // prior to making any of the other Channel Access calls.
+            // 
             // Returns :
             //   ECA_NORMAL      - Normal successful completion
             //   ECA_ALLOCMEM    - Failed, unable to allocate space in pool
@@ -158,10 +205,11 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_create_channel(
           string channelName,
-          ConnectionCallback connectionCallback,
+          ConnectionCallback? connectionCallback,
           out IntPtr pChannel
         )
         {
+            set_current_context();
             if (Enum.TryParse<EcaType>(ca_create_channel(
                 channelName, 
                 connectionCallback, 
