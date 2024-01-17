@@ -37,10 +37,13 @@ namespace Convergence
                     IntPtr epicsHandle;
                     // Always call ca_context_create() before any other Channel Access calls
                     EPICSWrapper.ca_context_create(PreemptiveCallbacks.DISABLE);
-                    switch (EPICSWrapper.ca_create_channel(id.EndPointName, null, out epicsHandle))
+                    switch (EPICSWrapper.ca_create_channel(id.EndPointName ?? "", null, out epicsHandle))
                     {
                         case EcaType.ECA_NORMAL:
                             return new EndPointID(Protocols.EPICS, new Guid());
+                            break;
+                        case EcaType.ECA_BADSTR:
+                            throw new ArgumentException("Invalid channel name");
                             break;
                     }
                     break;

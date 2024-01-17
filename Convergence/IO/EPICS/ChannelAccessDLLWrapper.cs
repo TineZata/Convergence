@@ -89,9 +89,9 @@ namespace Convergence.IO.EPICS
             // Check if CurrentContext has been created
             if (CurrentContext == IntPtr.Zero)
             {
-                ca_attach_context(CurrentContext);
+                ca_attach_context(context);
                 // Check if CurrentContext has been created
-                context = ca_current_context();
+                CurrentContext = ca_current_context();
                 try
                 {
                     CurrentContext.Should().Be(context);
@@ -107,7 +107,7 @@ namespace Convergence.IO.EPICS
                 // Destroy the CurrentContext
                 ca_context_destroy();
                 // Get a new context
-                context = ca_current_context();
+                CurrentContext = ca_current_context();
                 try
                 {
                     CurrentContext.Should().Be(context);
@@ -132,7 +132,7 @@ namespace Convergence.IO.EPICS
         /// <exception cref="InvalidCastException"></exception>
         public static EcaType ca_context_create(PreemptiveCallbacks preemptive)
         {
-            if (Enum.TryParse<EcaType>(ca_context_create(preemptive).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_context_create(preemptive)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -167,7 +167,7 @@ namespace Convergence.IO.EPICS
         public static EcaType ca_attach_context(this IntPtr context)
         {
             // Try Parse Enum of type <EcaType> from Int32 return by (ca_attach_context(context))
-            if (Enum.TryParse<EcaType>(ca_attach_context(context).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_attach_context(context)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -210,13 +210,13 @@ namespace Convergence.IO.EPICS
         )
         {
             set_current_context();
-            if (Enum.TryParse<EcaType>(ca_create_channel(
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_create_channel(
                 channelName, 
                 connectionCallback, 
                 IntPtr.Zero,
                 ChannelAccessConstants.CA_PRIORITY_DEFAULT,
                 out pChannel
-            ).ToString(), out EcaType result
+            )).ToString(), out EcaType result
             ))
             {
                 return result;
@@ -251,7 +251,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_clear_channel(IntPtr pChanID)
         {
-            if (Enum.TryParse<EcaType>(ca_clear_channel(pChanID).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_clear_channel(pChanID)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -308,12 +308,12 @@ namespace Convergence.IO.EPICS
           void* pMemoryAllocatedToHoldDbrStruct
         )
         {
-            if (Enum.TryParse<EcaType>(ca_array_get(
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_get(
               (short)dbrType,
               (uint)nElementsOfThatTypeWanted,
               pChanID,
               (System.IntPtr)pMemoryAllocatedToHoldDbrStruct
-            ).ToString(), out EcaType result))
+            )).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -354,13 +354,13 @@ namespace Convergence.IO.EPICS
           IntPtr userArg
         )
         {
-            if (Enum.TryParse<EcaType>(ca_array_get_callback(
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_get_callback(
               (Int16)type,
               (UInt32)nElementsWanted,
               pChanID,
               valueUpdateCallBack,
               userArg
-            ).ToString(), out EcaType result))
+            )).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -409,12 +409,12 @@ namespace Convergence.IO.EPICS
           void* pValueToWrite // New channel value is copied from here
         )
         {
-            if (Enum.TryParse<EcaType>(ca_array_put(
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put(
               (short)dbrType,
               (uint)nElementsOfThatTypeWanted,
               pChanID,
               (IntPtr)pValueToWrite   // New channel value is copied from here
-            ).ToString(), out EcaType result))
+            )).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -458,14 +458,14 @@ namespace Convergence.IO.EPICS
           int userArg
         )
         {
-            if (Enum.TryParse<EcaType>(ca_array_put_callback(
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put_callback(
               (short)dbrType,
               (uint)nElementsOfThatTypeWanted,
               pChanID,
               (IntPtr)pValueToWrite, // New value is copied from here
               valueUpdateCallback, // Event will be raised when successful write is confirmed
               (IntPtr)userArg
-            ).ToString(), out EcaType result))
+            )).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -521,7 +521,7 @@ namespace Convergence.IO.EPICS
           int userArg
         )
         {
-            if (Enum.TryParse<EcaType>(ca_create_subscription(
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_create_subscription(
               (short)dbrType,  // DBR_xxx
               (uint)count,
               pChanID,
@@ -529,7 +529,7 @@ namespace Convergence.IO.EPICS
               valueUpdateCallback,
               (System.IntPtr)userArg,
               out IntPtr pEvid
-            ).ToString(), out EcaType result))
+            )).ToString(), out EcaType result))
             {
                 return pEvid;
             }
@@ -568,7 +568,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_clear_subscription(this IntPtr pChanID)
         {
-            if (Enum.TryParse<EcaType>(ca_clear_subscription(pChanID).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_clear_subscription(pChanID)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -591,7 +591,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_flush_io()
         {
-            if (Enum.TryParse<EcaType>(ca_flush_io().ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_flush_io()).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -610,7 +610,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_pend_io(double timeOut_secs_zeroMeansInfinite)
         {
-            if (Enum.TryParse<EcaType>(ca_pend_io(timeOut_secs_zeroMeansInfinite).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_pend_io(timeOut_secs_zeroMeansInfinite)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -631,7 +631,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_test_io()
         {
-            if (Enum.TryParse<EcaType>(ca_test_io().ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_test_io()).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -651,7 +651,7 @@ namespace Convergence.IO.EPICS
         public static EcaType ca_pend_event(double nSecsToBlock_zeroMeansInfinite)
         {
 
-            if (Enum.TryParse<EcaType>(ca_pend_event(nSecsToBlock_zeroMeansInfinite).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_pend_event(nSecsToBlock_zeroMeansInfinite)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -696,7 +696,7 @@ namespace Convergence.IO.EPICS
 
         public static DbFieldType ca_field_type(this IntPtr pChanID)
         {
-            if (Enum.TryParse<DbFieldType>(ca_field_type(pChanID).ToString(), out DbFieldType result))
+            if (Enum.TryParse<DbFieldType>(CA_EXTRACT_MSG_NO(ca_field_type(pChanID)).ToString(), out DbFieldType result))
             {
                 return result;
             }
@@ -784,7 +784,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_add_exception_event(ExceptionHandlerCallback pExceptionHandlerCallBack, nint userArg)
         {
-            if (Enum.TryParse<EcaType>(ca_add_exception_event(pExceptionHandlerCallBack, userArg).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_add_exception_event(pExceptionHandlerCallBack, userArg)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -804,7 +804,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_replace_printf_handler(PrintfCallback printfCallback)
         {
-            if (Enum.TryParse<EcaType>(ca_replace_printf_handler(printfCallback).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_replace_printf_handler(printfCallback)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -840,6 +840,7 @@ namespace Convergence.IO.EPICS
             static extern IntPtr ca_version();
         }
 
+        private static int CA_EXTRACT_MSG_NO(int eca_code) => ((eca_code & ChannelAccessConstants.CA_M_MSG_NO) >> ChannelAccessConstants.CA_V_MSG_NO);
     }
 
 }
