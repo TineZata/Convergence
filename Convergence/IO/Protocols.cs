@@ -3,7 +3,8 @@
     public enum Protocols
     {
         None,
-        EPICS,
+        EPICS_CA,
+        EPICS_PVA,
         Tango,
         MODBUS,
         PROFINET,

@@ -15,6 +15,10 @@ namespace Convergence.IO.EPICS
     public class Settings : ISettings
     {
         /// <summary>
+        /// The channel handle.
+        /// </summary>
+        public IntPtr ChannelHandle = IntPtr.Zero;
+        /// <summary>
         /// True if the protocol is PVA.
         /// </summary>
         public bool IsPVA { get; set; }

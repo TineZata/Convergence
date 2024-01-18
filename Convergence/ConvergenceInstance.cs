@@ -2,13 +2,17 @@
 using EPICSWrapper = Convergence.IO.EPICS.ChannelAccessDLLWrapper;
 using EPICSCallBack = Convergence.IO.EPICS.ConnectionCallback;
 using Convergence.IO.EPICS;
+using System.Collections.Concurrent;
 
 namespace Convergence
 {
     public class ConvergenceInstance : IConvergence
     {
         // Singleton instance of Convergence.
-        private static ConvergenceInstance _hub;
+        private static ConvergenceInstance? _hub;
+
+        // ConcurrentDictionary of all the EPICS CA connections as a key-value pair of EndPointID and EndPointBase<EPICSSettings>.
+        private static ConcurrentDictionary<EndPointID, Convergence.IO.EPICS.Settings>? _epics_ca_connections = new();
 
         /// <summary>
         /// Network communication hub, which keeps track of all the connections on all protocols.
@@ -29,18 +33,19 @@ namespace Convergence
         // Private constructor for singleton, to prevent external instantiation.
         private ConvergenceInstance() { }
         
-        public EndPointID Connect<T>(EndPointID id, EndPointBase<T> endPointArgs)
+        public EndPointID Connect<T>(EndPointBase<T> endPointArgs)
         {
-            switch (id.Protocol)
+            switch (endPointArgs.Id.Protocol)
             {
-                case Protocols.EPICS:
-                    IntPtr epicsHandle;
-                    // Always call ca_context_create() before any other Channel Access calls
-                    EPICSWrapper.ca_context_create(PreemptiveCallbacks.DISABLE);
-                    switch (EPICSWrapper.ca_create_channel(id.EndPointName ?? "", null, out epicsHandle))
+                case Protocols.EPICS_CA:
+                    var epicsSettings = endPointArgs.ConvertToEPICSSettings();
+                    // Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
+                    EPICSWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
+                    switch (EPICSWrapper.ca_create_channel(endPointArgs.Id.EndPointName ?? "", null, out epicsSettings.ChannelHandle))
                     {
                         case EcaType.ECA_NORMAL:
-                            return new EndPointID(Protocols.EPICS, new Guid());
+                            endPointArgs.Id.UniqueId = Guid.NewGuid();
+                            _epics_ca_connections!.TryAdd(endPointArgs.Id, epicsSettings);
                             break;
                         case EcaType.ECA_BADSTR:
                             throw new ArgumentException("Invalid channel name");
@@ -48,7 +53,7 @@ namespace Convergence
                     }
                     break;
             }
-            return EndPointID.Empty;
+            return endPointArgs.Id;
         }
     }
 }
