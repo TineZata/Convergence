@@ -1,12 +1,11 @@
 ﻿using Convergence.Interfaces;
-using EPICSWrapper = Convergence.IO.EPICS.ChannelAccessDLLWrapper;
-using EPICSCallBack = Convergence.IO.EPICS.ConnectionCallback;
+
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
 
 namespace Convergence
 {
-    public class ConvergenceInstance : IConvergence
+    public partial class ConvergenceInstance : IConvergence
     {
         // Singleton instance of Convergence.
         private static ConvergenceInstance? _hub;
@@ -35,22 +34,11 @@ namespace Convergence
         
         public EndPointID Connect<T>(EndPointBase<T> endPointArgs)
         {
+            EndPointID endPointID = new(Protocols.None, Guid.Empty);
             switch (endPointArgs.Id.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var epicsSettings = endPointArgs.ConvertToEPICSSettings();
-                    // Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
-                    EPICSWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
-                    switch (EPICSWrapper.ca_create_channel(endPointArgs.Id.EndPointName ?? "", null, out epicsSettings.ChannelHandle))
-                    {
-                        case EcaType.ECA_NORMAL:
-                            endPointArgs.Id.UniqueId = Guid.NewGuid();
-                            _epics_ca_connections!.TryAdd(endPointArgs.Id, epicsSettings);
-                            break;
-                        case EcaType.ECA_BADSTR:
-                            throw new ArgumentException("Invalid channel name");
-                            break;
-                    }
+                    endPointID = EpicsCaConnect(endPointArgs);
                     break;
             }
             return endPointArgs.Id;
