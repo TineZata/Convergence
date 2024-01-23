@@ -48,11 +48,11 @@ namespace Convergence
         /// <returns>True if end point was registered successfully, false if end point was already registered.</returns>
         public bool Register(EndPointBase<ISettings> endPoint)
         {
-            if (_endPoints.ContainsKey(endPoint.Id))
+            if (_endPoints.ContainsKey(endPoint.EndPointID))
             {
                 return false;
             }
-            _endPoints.TryAdd(endPoint.Id, endPoint);
+            _endPoints.TryAdd(endPoint.EndPointID, endPoint);
             return true;
         }
         /// <summary>
@@ -62,11 +62,11 @@ namespace Convergence
         /// <returns>True if end point was unregistered successfully, false if end point was not registered.</returns>
         public bool Unregister(EndPointBase<ISettings> endPoint)
         {
-            if (!_endPoints.ContainsKey(endPoint.Id))
+            if (!_endPoints.ContainsKey(endPoint.EndPointID))
             {
                 return false;
             }
-            _endPoints.TryRemove(endPoint.Id, out _);
+            _endPoints.TryRemove(endPoint.EndPointID, out _);
             return true;
         }
         /// <summary>

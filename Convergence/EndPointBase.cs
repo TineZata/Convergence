@@ -9,7 +9,7 @@ namespace Convergence
     public class EndPointBase<TSettings>
     {
         public TSettings Settings { get; set; }
-        public EndPointID Id { get; set; }
+        public EndPointID EndPointID { get; set; }
 
         public global::Convergence.IO.EPICS.Settings ConvertToEPICSSettings()
         {

@@ -32,16 +32,33 @@ namespace Convergence
         // Private constructor for singleton, to prevent external instantiation.
         private ConvergenceInstance() { }
         
+        /// <summary>
+        /// Generic Connect method for all protocols.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endPointArgs"></param>
+        /// <returns></returns>
         public EndPointID Connect<T>(EndPointBase<T> endPointArgs)
         {
             EndPointID endPointID = new(Protocols.None, Guid.Empty);
-            switch (endPointArgs.Id.Protocol)
+            switch (endPointArgs.EndPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    endPointID = EpicsCaConnect(endPointArgs);
+                    return EpicsCaConnect(endPointArgs);
+            }
+            return new EndPointID(Protocols.None, Guid.Empty);
+        }
+
+        public void Disconnect(EndPointID endPointID)
+        {
+            switch (endPointID.Protocol)
+            {
+                case Protocols.EPICS_CA:
+                    EpicsCaDisconnect(endPointID);
                     break;
             }
-            return endPointArgs.Id;
         }
+
+        
     }
 }
