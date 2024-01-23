@@ -21,6 +21,9 @@ namespace ConnectTests
             var endPointArgs = new EndPointBase<EPICSSettings> { Id = endPointId, Settings = epicSettings };
             EndPointID result = ConvergenceInstance.Hub.Connect(endPointArgs);
             result.UniqueId.Should().NotBe(Guid.Empty);
+            // Calling Connect again with the same EndPointID should return the same Guid.
+            EndPointID result2 = ConvergenceInstance.Hub.Connect(endPointArgs);
+            result2.UniqueId.Should().Be(result.UniqueId);
         }
 
         // Test for ConvergenceLib.IO.EPICS.Settings is set correctlty for EPICS PV Access, a valid Guid is returned.
@@ -36,6 +39,9 @@ namespace ConnectTests
             var endPointArgs = new EndPointBase<EPICSSettings> { Settings = settings };
             EndPointID result = ConvergenceInstance.Hub.Connect(endPointArgs);
             result.UniqueId.Should().NotBe(Guid.Empty);
+            // Calling Connect again with the same EndPointID should return the same Guid.
+            EndPointID result2 = ConvergenceInstance.Hub.Connect(endPointArgs);
+            result2.UniqueId.Should().Be(result.UniqueId);
         }
     }
 }
