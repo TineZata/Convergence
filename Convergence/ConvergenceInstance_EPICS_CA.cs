@@ -21,15 +21,25 @@ namespace Convergence
             switch (EPICSWrapper.ca_create_channel(endPointArgs.Id.EndPointName ?? "", null, out epicsSettings.ChannelHandle))
             {
                 case EcaType.ECA_NORMAL:
-                    endPointArgs.Id.UniqueId = Guid.NewGuid();
-                    // Try add if not already added.
-                    _epics_ca_connections!.TryAdd(endPointArgs.Id, epicsSettings);
+                    
+                    // Check if the CA ID already exists.
+                    if (_epics_ca_connections!.ContainsKey(endPointArgs.Id))
+                    {
+                        return endPointArgs.Id;
+                    }
+                    else
+                    {
+                        // Try add a new ID, if not already added.
+                        endPointArgs.Id.UniqueId = Guid.NewGuid();
+                        _epics_ca_connections!.TryAdd(endPointArgs.Id, epicsSettings);
+                        return endPointArgs.Id;
+                    }
                     break;
                 case EcaType.ECA_BADSTR:
                     throw new ArgumentException("Invalid channel name");
                     break;
             }
-            return endPointArgs.Id;
+            return new EndPointID(Protocols.None, Guid.Empty);
         }
     }
 }
