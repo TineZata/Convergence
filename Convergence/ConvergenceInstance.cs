@@ -1,5 +1,4 @@
 ﻿using Convergence.Interfaces;
-
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
 
@@ -32,16 +31,33 @@ namespace Convergence
         // Private constructor for singleton, to prevent external instantiation.
         private ConvergenceInstance() { }
         
-        public EndPointID Connect<T>(EndPointBase<T> endPointArgs)
+        /// <summary>
+        /// Generic Connect method for all protocols.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endPointArgs"></param>
+        /// <returns></returns>
+        public void Connect<T>(EndPointBase<T> endPointArgs)
         {
-            EndPointID endPointID = new(Protocols.None, Guid.Empty);
-            switch (endPointArgs.Id.Protocol)
+            switch (endPointArgs.EndPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    endPointID = EpicsCaConnect(endPointArgs);
+                    EpicsCaConnect(endPointArgs);
                     break;
             }
-            return endPointArgs.Id;
+            
         }
+
+        public void Disconnect(EndPointID endPointID)
+        {
+            switch (endPointID.Protocol)
+            {
+                case Protocols.EPICS_CA:
+                    EpicsCaDisconnect(endPointID);
+                    break;
+            }
+        }
+
+        
     }
 }

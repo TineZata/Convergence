@@ -18,10 +18,16 @@ namespace Convergence
             return $"{nameof(Protocol)}:{UniqueId}";
         }
 
-        public EndPointID(Protocols ePICS, Guid guid, string endPointName)
-            : this(ePICS, guid)
+        public EndPointID(Protocols protocol, Guid guid, string endPointName)
+            : this(protocol, guid)
         {
             this.EndPointName = endPointName;
+        }
+
+        public EndPointID(Protocols protocol, string endPointName)
+            : this(protocol, Guid.NewGuid(), endPointName)
+        {
+            this.Protocol = protocol;
         }
     }
 }
