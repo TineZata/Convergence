@@ -15,6 +15,6 @@ namespace Convergence.Interfaces
         /// </summary>
         /// <param name="endPointArgs"></param>
         /// <returns>Guid</returns>
-        EndPointID Connect<T>(EndPointBase<T> endPointArgs);
+        void Connect<T>(EndPointBase<T> endPointArgs);
     }
 }

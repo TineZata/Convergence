@@ -1,5 +1,4 @@
 ﻿using Convergence.Interfaces;
-
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
 
@@ -38,15 +37,15 @@ namespace Convergence
         /// <typeparam name="T"></typeparam>
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
-        public EndPointID Connect<T>(EndPointBase<T> endPointArgs)
+        public void Connect<T>(EndPointBase<T> endPointArgs)
         {
-            EndPointID endPointID = new(Protocols.None, Guid.Empty);
             switch (endPointArgs.EndPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    return EpicsCaConnect(endPointArgs);
+                    EpicsCaConnect(endPointArgs);
+                    break;
             }
-            return new EndPointID(Protocols.None, Guid.Empty);
+            
         }
 
         public void Disconnect(EndPointID endPointID)

@@ -13,13 +13,13 @@ namespace Convergence
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public EndPointID EpicsCaConnect<T>(EndPointBase<T> endPointArgs)
+        public void EpicsCaConnect<T>(EndPointBase<T> endPointArgs)
         {
             var endPointID = endPointArgs.EndPointID;
             // Check if the CA ID already exists.
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
-                return endPointID;
+                return;
             }
             else
             {
@@ -32,13 +32,12 @@ namespace Convergence
                         // Try add a new ID, if not already added.
                         endPointID.UniqueId = Guid.NewGuid();
                         _epics_ca_connections!.TryAdd(endPointID, epicsSettings);
-                        return endPointID;
+                        break;
 
                     case EcaType.ECA_BADSTR:
                         throw new ArgumentException("Invalid channel name");
                         break;
                 }
-                return new EndPointID(Protocols.None, Guid.Empty);
             }
         }
 
