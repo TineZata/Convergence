@@ -48,12 +48,27 @@ namespace Convergence
             
         }
 
+        /// <summary>
+        /// Disconnects the EndPointID from the network.
+        /// </summary>
+        /// <param name="endPointID"></param>
         public void Disconnect(EndPointID endPointID)
         {
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
                     EpicsCaDisconnect(endPointID);
+                    break;
+            }
+        }
+
+        public void Read(EndPointID endPointID)
+        {
+            switch (endPointID.Protocol)
+            {
+                case Protocols.EPICS_CA:
+                    EpicsCaRead(endPointID);
+
                     break;
             }
         }

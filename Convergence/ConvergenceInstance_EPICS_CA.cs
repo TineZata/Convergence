@@ -1,6 +1,8 @@
 ﻿using EPICSWrapper = Convergence.IO.EPICS.ChannelAccessDLLWrapper;
 using EPICSCallBack = Convergence.IO.EPICS.ConnectionCallback;
 using Convergence.IO.EPICS;
+using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace Convergence
 {
@@ -48,27 +50,84 @@ namespace Convergence
         /// <exception cref="NotImplementedException"></exception>
         private void EpicsCaDisconnect(EndPointID endPointID)
         {
-            switch(endPointID.Protocol)
+            if (_epics_ca_connections!.ContainsKey(endPointID))
             {
-                case Protocols.EPICS_CA:
-                    if (_epics_ca_connections!.ContainsKey(endPointID))
-                    {
-                        switch (EPICSWrapper.ca_clear_channel(_epics_ca_connections[endPointID].ChannelHandle))
-                        {
-                            case EcaType.ECA_NORMAL:
-                                _epics_ca_connections.TryRemove(endPointID, out _);
-                                break;
-                            case EcaType.ECA_BADCHID:
-                                throw new ArgumentException("Corrupted ChannelID");
-                                break;
-                        }
-                        
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
+                switch (EPICSWrapper.ca_clear_channel(_epics_ca_connections[endPointID].ChannelHandle))
+                {
+                    case EcaType.ECA_NORMAL:
+                        _epics_ca_connections.TryRemove(endPointID, out _);
+                        break;
+                    case EcaType.ECA_BADCHID:
+                        throw new ArgumentException("Corrupted ChannelID");
+                        break;
+                }
             }
-            
+        }
+
+        /// <summary>
+        /// EPICS CA Read
+        /// </summary>
+        /// <param name="endPointID"></param>
+        private void EpicsCaRead(EndPointID endPointID, ValueUpdateCallback? callback)
+        {
+            if (_epics_ca_connections!.ContainsKey(endPointID))
+            {
+                
+                //ValueUpdateNotificationEventArgs eventArgs = (ValueUpdateNotificationEventArgs)Marshal.PtrToStructure(callback, typeof(ValueUpdateNotificationEventArgs));
+                var epicsSettings = _epics_ca_connections[endPointID];
+                switch (EPICSWrapper.ca_array_get_callback(
+                    pChanID:                epicsSettings.ChannelHandle, 
+                    type:                   epicsSettings.DataType,
+                    nElementsWanted:        epicsSettings.ElementCount,
+                    valueUpdateCallBack:    callback, 
+                    userArg:                GetEventArgs(callback!).tagValue))
+                {
+                    case EcaType.ECA_NORMAL:
+                        break;
+                    case EcaType.ECA_BADTYPE:
+                        throw new ArgumentException("Invalid type");
+                        break;
+                    case EcaType.ECA_BADCOUNT:
+                        throw new ArgumentException("Invalid count");
+                        break;
+                    case EcaType.ECA_NORDACCESS:
+                        throw new ArgumentException("No read access");
+                        break;
+                    case EcaType.ECA_DISCONN:
+                        throw new ArgumentException("Channel disconnected");
+                        break;
+                    case EcaType.ECA_UNAVAILINSERV:
+                        throw new ArgumentException("Unsupported by service");
+                        break;
+                    case EcaType.ECA_TIMEOUT:
+                        throw new ArgumentException("Request timed out");
+                        break;
+                    case EcaType.ECA_ALLOCMEM:
+                        throw new ArgumentException("Memory allocation failed");
+                        break;
+                    case EcaType.ECA_TOLARGE:
+                        throw new ArgumentException("Message body too large");
+                        break;
+                    case EcaType.ECA_GETFAIL:
+                    default:
+                        throw new ArgumentException("Get failed");
+                        break;
+                }
+                // Must call 'flush' otherwise the message isn't sent to the server
+                // immediately. If we forget to call 'flush', the message *will* eventually
+                // get sent, but not until the default timeout period of 30 secs has elapsed,
+                // in which case the callback handler won't be invoked until that 30 secs has elapsed.
+                EPICSWrapper.ca_flush_io();
+            }
+        }
+
+        private ValueUpdateNotificationEventArgs GetEventArgs(ValueUpdateCallback callback)
+        {
+            ParameterInfo[] infos = callback.Method.GetParameters();
+
+            IntPtr argsPtr = (IntPtr)infos[0].DefaultValue; // Get actual IntPtr value
+
+            return (ValueUpdateNotificationEventArgs)Marshal.PtrToStructure(argsPtr, typeof(ValueUpdateNotificationEventArgs));
         }
     }
 }
