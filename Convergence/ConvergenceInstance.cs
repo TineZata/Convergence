@@ -1,5 +1,5 @@
 ﻿using Convergence.Interfaces;
-using Convergence.IO.EPICS;
+using Convergence.IO;
 using System.Collections.Concurrent;
 
 namespace Convergence
@@ -62,13 +62,12 @@ namespace Convergence
             }
         }
 
-        public void Read(EndPointID endPointID)
+        public async Task ReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
         {
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    EpicsCaRead(endPointID);
-
+                    await EpicsCaReadAsync(endPointID, callback);
                     break;
             }
         }

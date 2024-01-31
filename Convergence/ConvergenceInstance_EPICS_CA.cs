@@ -1,8 +1,9 @@
 ﻿using EPICSWrapper = Convergence.IO.EPICS.ChannelAccessDLLWrapper;
-using EPICSCallBack = Convergence.IO.EPICS.ConnectionCallback;
+using EPICSCallBack = Convergence.IO.ConnectionCallback;
 using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using Convergence.IO;
 
 namespace Convergence
 {
@@ -64,54 +65,53 @@ namespace Convergence
             }
         }
 
-        /// <summary>
-        /// EPICS CA Read
-        /// </summary>
-        /// <param name="endPointID"></param>
-        private void EpicsCaRead(EndPointID endPointID, ValueUpdateCallback? callback)
+        private async Task EpicsCaReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
         {
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
-                
-                //ValueUpdateNotificationEventArgs eventArgs = (ValueUpdateNotificationEventArgs)Marshal.PtrToStructure(callback, typeof(ValueUpdateNotificationEventArgs));
                 var epicsSettings = _epics_ca_connections[endPointID];
-                switch (EPICSWrapper.ca_array_get_callback(
-                    pChanID:                epicsSettings.ChannelHandle, 
-                    type:                   epicsSettings.DataType,
-                    nElementsWanted:        epicsSettings.ElementCount,
-                    valueUpdateCallBack:    callback, 
-                    userArg:                GetEventArgs(callback!).tagValue))
-                {
-                    case EcaType.ECA_NORMAL:
-                        break;
-                    case EcaType.ECA_BADTYPE:
-                        throw new ArgumentException("Invalid type");
-                        break;
-                    case EcaType.ECA_BADCOUNT:
-                        throw new ArgumentException("Invalid count");
-                        break;
-                    case EcaType.ECA_NORDACCESS:
-                        throw new ArgumentException("No read access");
-                        break;
-                    case EcaType.ECA_DISCONN:
-                        throw new ArgumentException("Channel disconnected");
-                        break;
-                    case EcaType.ECA_UNAVAILINSERV:
-                        throw new ArgumentException("Unsupported by service");
-                        break;
-                    case EcaType.ECA_TIMEOUT:
-                        throw new ArgumentException("Request timed out");
-                        break;
-                    case EcaType.ECA_ALLOCMEM:
-                        throw new ArgumentException("Memory allocation failed");
-                        break;
-                    case EcaType.ECA_TOLARGE:
-                        throw new ArgumentException("Message body too large");
-                        break;
-                    case EcaType.ECA_GETFAIL:
-                    default:
-                        throw new ArgumentException("Get failed");
-                        break;
+                if (epicsSettings.ChannelHandle != IntPtr.Zero)
+                { 
+                    EcaType result = await Task.Run(
+                        () => EPICSWrapper.ca_array_get_callback(
+                        pChanID: epicsSettings.ChannelHandle,
+                        type: GetDbFieldType(epicsSettings.DataType),
+                        nElementsWanted: epicsSettings.ElementCount,
+                        valueUpdateCallBack: callback!,
+                        userArg: GetEventArgs(callback!).tagValue));
+                    switch (result)
+                    {
+                        case EcaType.ECA_NORMAL:
+                            break;
+                        case EcaType.ECA_BADTYPE:
+                            throw new ArgumentException("Invalid type");
+                            break;
+                        case EcaType.ECA_BADCOUNT:
+                            throw new ArgumentException("Invalid count");
+                            break;
+                        case EcaType.ECA_NORDACCESS:
+                            throw new ArgumentException("No read access");
+                            break;
+                        case EcaType.ECA_DISCONN:
+                            throw new ArgumentException("Channel disconnected");
+                            break;
+                        case EcaType.ECA_UNAVAILINSERV:
+                            throw new ArgumentException("Unsupported by service");
+                            break;
+                        case EcaType.ECA_TIMEOUT:
+                            throw new ArgumentException("Request timed out");
+                            break;
+                        case EcaType.ECA_ALLOCMEM:
+                            throw new ArgumentException("Memory allocation failed");
+                            break;
+                        case EcaType.ECA_TOLARGE:
+                            throw new ArgumentException("Message body too large");
+                            break;
+                        case EcaType.ECA_GETFAIL:
+                        default:
+                            throw new ArgumentException("Get failed");
+                            break;
+                    }
                 }
                 // Must call 'flush' otherwise the message isn't sent to the server
                 // immediately. If we forget to call 'flush', the message *will* eventually
@@ -128,6 +128,12 @@ namespace Convergence
             IntPtr argsPtr = (IntPtr)infos[0].DefaultValue; // Get actual IntPtr value
 
             return (ValueUpdateNotificationEventArgs)Marshal.PtrToStructure(argsPtr, typeof(ValueUpdateNotificationEventArgs));
+        }
+
+        private DbRecordRequestType GetDbFieldType(DataTypes type)
+        {
+            Enum.TryParse(type.ToString(), out DbRecordRequestType dbReqtype);
+            return dbReqtype;
         }
     }
 }

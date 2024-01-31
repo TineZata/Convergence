@@ -39,7 +39,7 @@ namespace Convergence.IO.EPICS
 
   [StructLayout(LayoutKind.Sequential)]
   [ApiWrapper.OriginalStructType(typeof(StructsAsDefinedInC.event_handler_args))]
-  internal struct ValueUpdateNotificationEventArgs 
+  public struct ValueUpdateNotificationEventArgs 
   {
     [ApiWrapper.OriginalName( "usr"    )] public nint   tagValue  ; // User argument supplied with the request
     [ApiWrapper.OriginalName( "chid"   )] public IntPtr pChannel  ; // Channel ID to which this event pertains
