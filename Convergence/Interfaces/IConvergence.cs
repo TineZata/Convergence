@@ -24,6 +24,6 @@ namespace Convergence.Interfaces
         /// <param name="endPointID"></param>
         public void Disconnect(EndPointID endPointID);
 
-        public Task ReadAsync(EndPointID endPointID, ValueUpdateCallback? callback);
+        public Task<EndPointStatus> ReadAsync(EndPointID endPointID, ValueUpdateCallback? callback);
     }
 }

@@ -350,8 +350,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbRecordRequestType type,
           int nElementsWanted,
-          ValueUpdateCallback valueUpdateCallBack,
-          IntPtr userArg
+          ValueUpdateCallback valueUpdateCallBack
         )
         {
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_get_callback(
@@ -359,7 +358,7 @@ namespace Convergence.IO.EPICS
               (UInt32)nElementsWanted,
               pChanID,
               valueUpdateCallBack,
-              userArg
+              0
             )).ToString(), out EcaType result))
             {
                 return result;

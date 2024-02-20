@@ -62,14 +62,16 @@ namespace Convergence
             }
         }
 
-        public async Task ReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
+        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
         {
+            EndPointStatus status =  EndPointStatus.Disconnected;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    await EpicsCaReadAsync(endPointID, callback);
+                    status = await EpicsCaReadAsync(endPointID, callback);
                     break;
             }
+            return status;
         }
 
         

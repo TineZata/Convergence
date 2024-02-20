@@ -65,8 +65,9 @@ namespace Convergence
             }
         }
 
-        private async Task EpicsCaReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
+        private async Task<EndPointStatus> EpicsCaReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
         {
+            EndPointStatus status = EndPointStatus.Disconnected;
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
                 var epicsSettings = _epics_ca_connections[endPointID];
@@ -77,39 +78,34 @@ namespace Convergence
                         pChanID: epicsSettings.ChannelHandle,
                         type: GetDbFieldType(epicsSettings.DataType),
                         nElementsWanted: epicsSettings.ElementCount,
-                        valueUpdateCallBack: callback!,
-                        userArg: GetEventArgs(callback!).tagValue));
+                        valueUpdateCallBack: callback!)
+                        );
                     switch (result)
                     {
                         case EcaType.ECA_NORMAL:
+                            status = EndPointStatus.Okay;
                             break;
                         case EcaType.ECA_BADTYPE:
-                            throw new ArgumentException("Invalid type");
-                            break;
-                        case EcaType.ECA_BADCOUNT:
-                            throw new ArgumentException("Invalid count");
+                            status = EndPointStatus.InvalidDataType;
                             break;
                         case EcaType.ECA_NORDACCESS:
-                            throw new ArgumentException("No read access");
+                            status = EndPointStatus.NoReadAccess;
                             break;
                         case EcaType.ECA_DISCONN:
-                            throw new ArgumentException("Channel disconnected");
+                            status = EndPointStatus.Disconnected;
                             break;
                         case EcaType.ECA_UNAVAILINSERV:
-                            throw new ArgumentException("Unsupported by service");
+                            status = EndPointStatus.Disconnected;
                             break;
                         case EcaType.ECA_TIMEOUT:
-                            throw new ArgumentException("Request timed out");
+                            status = EndPointStatus.TimedOut;
                             break;
+                        case EcaType.ECA_BADCOUNT:
                         case EcaType.ECA_ALLOCMEM:
-                            throw new ArgumentException("Memory allocation failed");
-                            break;
                         case EcaType.ECA_TOLARGE:
-                            throw new ArgumentException("Message body too large");
-                            break;
                         case EcaType.ECA_GETFAIL:
                         default:
-                            throw new ArgumentException("Get failed");
+                            status = EndPointStatus.UnknownError;
                             break;
                     }
                 }
@@ -119,6 +115,7 @@ namespace Convergence
                 // in which case the callback handler won't be invoked until that 30 secs has elapsed.
                 EPICSWrapper.ca_flush_io();
             }
+            return status;
         }
 
         private ValueUpdateNotificationEventArgs GetEventArgs(ValueUpdateCallback callback)
