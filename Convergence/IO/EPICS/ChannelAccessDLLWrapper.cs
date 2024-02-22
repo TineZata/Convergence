@@ -6,6 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using Conversion.IO.EPICS;
 using FluentAssertions;
+using static Convergence.ReadCallbackDelegate;
 
 namespace Convergence.IO.EPICS
 {
@@ -350,7 +351,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbRecordRequestType type,
           int nElementsWanted,
-          ValueUpdateCallback valueUpdateCallBack
+          ReadCallback valueUpdateCallBack
         )
         {
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_get_callback(
@@ -391,7 +392,7 @@ namespace Convergence.IO.EPICS
               Int16 type,
               UInt32 count,
               IntPtr pChanID,
-              ValueUpdateCallback pEventCallBack,
+              ReadCallback pEventCallBack,
               IntPtr userArg
             );
         }
@@ -453,7 +454,7 @@ namespace Convergence.IO.EPICS
           DbRecordRequestType dbrType,
           int nElementsOfThatTypeWanted,
           void* pValueToWrite,       // New channel value is copied from here
-          ValueUpdateCallback valueUpdateCallback, // Event will be raised when successful write is confirmed
+          ReadCallback valueUpdateCallback, // Event will be raised when successful write is confirmed
           int userArg
         )
         {
@@ -502,7 +503,7 @@ namespace Convergence.IO.EPICS
               UInt32 count,
               IntPtr pchanID,
               IntPtr pValue,         // New value is copied from here
-              ValueUpdateCallback pEventCallBack, // Event will be raised when successful write is confirmed
+              ReadCallback pEventCallBack, // Event will be raised when successful write is confirmed
               IntPtr userArg
             );
         }
@@ -516,12 +517,12 @@ namespace Convergence.IO.EPICS
           DbRecordRequestType dbrType,
           int count,
           WhichFieldsToMonitor whichFieldsToMonitor,
-          ValueUpdateCallback valueUpdateCallback,
+          ReadCallback valueUpdateCallback,
           int userArg
         )
         {
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_create_subscription(
-              (short)dbrType,  // DBR_xxx
+              (short)dbrType,
               (uint)count,
               pChanID,
               (uint)whichFieldsToMonitor,
@@ -553,13 +554,13 @@ namespace Convergence.IO.EPICS
             //   ECA_BADTYPE  - Invalid DBR_XXXX type
             //   ECA_ALLOCMEM - Unable to allocate memory
             //   ECA_ADDFAIL  - A local database event add failed
-            // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_add_event (???)
+            // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_add_event
             static extern Int32 ca_create_subscription(
-              Int16 dbrType,  // DBR_xxx
+              Int16 dbrType,
               UInt32 count,
               IntPtr pChanID,
               uint mask,
-              ValueUpdateCallback pEventCallBack,
+              ReadCallback pEventCallBack,
               IntPtr userArg,
               out IntPtr pEvid
             );

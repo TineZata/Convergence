@@ -1,6 +1,7 @@
 ﻿using Convergence.Interfaces;
 using Convergence.IO;
 using System.Collections.Concurrent;
+using static Convergence.ReadCallbackDelegate;
 
 namespace Convergence
 {
@@ -62,7 +63,7 @@ namespace Convergence
             }
         }
 
-        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
+        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? callback)
         {
             EndPointStatus status =  EndPointStatus.Disconnected;
             switch (endPointID.Protocol)

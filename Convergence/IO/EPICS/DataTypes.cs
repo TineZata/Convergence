@@ -88,4 +88,11 @@ namespace Convergence.IO.EPICS
         /// </summary>
         PVA_boolean
     }
+
+    public struct CA_SCALAR_SHORT
+    {
+        public System.Int16 status;
+        public System.Int16 severity;
+        public System.Int16 value;
+    }
 }

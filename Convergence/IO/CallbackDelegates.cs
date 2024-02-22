@@ -8,9 +8,7 @@ namespace Convergence.IO
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void ConnectionCallback(ConnectionStatusChangedEventArgs args);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    //public delegate void ValueUpdateCallback();
-    public delegate void ValueUpdateCallback(object args);
+    
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void ExceptionHandlerCallback(ExceptionHandlerEventArgs args);

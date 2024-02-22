@@ -6,6 +6,7 @@ using EPICSSettings = Convergence.IO.EPICS.Settings;
 using EPICSDataTypes = Convergence.IO.EPICS.DataTypes;
 using System.Net.NetworkInformation;
 using Convergence.IO.EPICS;
+using System.Runtime.InteropServices;
 
 namespace ReadTests
 {
@@ -23,13 +24,13 @@ namespace ReadTests
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
             ConvergenceInstance.Hub.Connect(endPointArgs);
-
+            Task.Delay(1000).Wait();
             bool readAsyncCalled = false;
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync(endPointArgs.EndPointID, (value) =>
             {
-                //value.Should().BeOfType<EPICSDataTypes.CA_DBF_SHORT>();
-                value.Should().Be(1);
+                CA_SCALAR_SHORT data = (CA_SCALAR_SHORT)Marshal.PtrToStructure(value, typeof(CA_SCALAR_SHORT));
+                data.value.Should().Be(1);
                 readAsyncCalled = true;
             });
             status.Should().Be(EndPointStatus.Okay);

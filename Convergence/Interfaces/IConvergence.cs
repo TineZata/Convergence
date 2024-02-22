@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Convergence.ReadCallbackDelegate;
 
 namespace Convergence.Interfaces
 {
@@ -24,6 +25,6 @@ namespace Convergence.Interfaces
         /// <param name="endPointID"></param>
         public void Disconnect(EndPointID endPointID);
 
-        public Task<EndPointStatus> ReadAsync(EndPointID endPointID, ValueUpdateCallback? callback);
+        public Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? callback);
     }
 }

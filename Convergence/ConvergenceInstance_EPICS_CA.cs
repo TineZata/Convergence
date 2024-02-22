@@ -4,6 +4,7 @@ using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Convergence.IO;
+using static Convergence.ReadCallbackDelegate;
 
 namespace Convergence
 {
@@ -65,7 +66,7 @@ namespace Convergence
             }
         }
 
-        private async Task<EndPointStatus> EpicsCaReadAsync(EndPointID endPointID, ValueUpdateCallback? callback)
+        private async Task<EndPointStatus> EpicsCaReadAsync(EndPointID endPointID, ReadCallback? callback)
         {
             EndPointStatus status = EndPointStatus.Disconnected;
             if (_epics_ca_connections!.ContainsKey(endPointID))
@@ -118,7 +119,7 @@ namespace Convergence
             return status;
         }
 
-        private ValueUpdateNotificationEventArgs GetEventArgs(ValueUpdateCallback callback)
+        private ValueUpdateNotificationEventArgs GetEventArgs(ReadCallback callback)
         {
             ParameterInfo[] infos = callback.Method.GetParameters();
 
