@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Convergence;
 using EPICSSettings = Convergence.IO.EPICS.Settings;
-using EPICSDataTypes = Convergence.IO.EPICS.DataTypes;
+using EPICSDataTypes = Convergence.IO.EPICS.DbFieldType;
 using System.Net.NetworkInformation;
 using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
@@ -18,7 +18,7 @@ namespace ReadTests
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PV");
             var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.CA_DBF_SHORT,
+                                datatype: EPICSDataTypes.DBF_SHORT_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
@@ -29,7 +29,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync(endPointArgs.EndPointID, (value) =>
             {
-                CA_SCALAR_SHORT data = (CA_SCALAR_SHORT)Marshal.PtrToStructure(value, typeof(CA_SCALAR_SHORT));
+                CA_SCALAR_SHORT data = (CA_SCALAR_SHORT)Marshal.PtrToStructure(value.dbr, typeof(CA_SCALAR_SHORT));
                 data.value.Should().Be(1);
                 readAsyncCalled = true;
             });

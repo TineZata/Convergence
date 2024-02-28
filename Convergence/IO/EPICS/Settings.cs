@@ -32,7 +32,7 @@ namespace Convergence.IO.EPICS
         /// <summary>
         /// The data type.
         /// </summary>
-        public DataTypes DataType { get; set; }
+        public DbFieldType DataType { get; set; }
 
         /// <summary>
         /// Number of elements.
@@ -46,7 +46,7 @@ namespace Convergence.IO.EPICS
         string ? Description { get; set; }
 
 
-        public Settings(DataTypes datatype, bool isServer, int elementCount, bool isPVA)
+        public Settings(DbFieldType datatype, bool isServer, int elementCount, bool isPVA)
         {
             DataType = datatype;
             IsServer = isServer;

@@ -77,7 +77,7 @@ namespace Convergence
                     EcaType result = await Task.Run(
                         () => EPICSWrapper.ca_array_get_callback(
                         pChanID: epicsSettings.ChannelHandle,
-                        type: GetDbFieldType(epicsSettings.DataType),
+                        type: epicsSettings.DataType,
                         nElementsWanted: epicsSettings.ElementCount,
                         valueUpdateCallBack: callback!)
                         );

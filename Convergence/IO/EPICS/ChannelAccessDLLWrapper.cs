@@ -349,18 +349,27 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_array_get_callback(
           this IntPtr pChanID,
-          DbRecordRequestType type,
+          DbFieldType type,
           int nElementsWanted,
           ReadCallback valueUpdateCallBack
         )
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_get_callback(
-              (Int16)type,
-              (UInt32)nElementsWanted,
-              pChanID,
-              valueUpdateCallBack,
-              0
-            )).ToString(), out EcaType result))
+            // Check that the channel is connected
+            if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
+            // Check that write access is allowed
+            if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
+            // Check that the data type is valid
+            if (type == ca_field_type(pChanID)) return EcaType.ECA_BADTYPE; 
+            // assign userArg to ca_puser(pChanID)
+            var userArg = ca_puser(pChanID);
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(
+                ca_array_get_callback(
+                  (Int16)type,
+                  (UInt32)nElementsWanted,
+                  pChanID,
+                  valueUpdateCallBack,
+                  userArg)
+                ).ToString(), out EcaType result))
             {
                 return result;
             }

@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Convergence;
 using EPICSSettings = Convergence.IO.EPICS.Settings;
-using EPICSDataTypes = Convergence.IO.EPICS.DataTypes;
+using EPICSDataTypes = Convergence.IO.EPICS.DbFieldType;
 
 namespace ConnectTests
 {
@@ -14,7 +14,7 @@ namespace ConnectTests
         {
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PV");
             var epicSettings = new EPICSSettings(
-                datatype: EPICSDataTypes.CA_DBF_SHORT, 
+                datatype: EPICSDataTypes.DBF_SHORT_i16, 
                 elementCount: 1, 
                 isServer: false, 
                 isPVA: false);
@@ -28,7 +28,7 @@ namespace ConnectTests
         {
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PV");
             var epicSettings = new EPICSSettings(
-                datatype: EPICSDataTypes.CA_DBF_SHORT,
+                datatype: EPICSDataTypes.DBF_SHORT_i16,
                 elementCount: 1,
                 isServer: false,
                 isPVA: false);
@@ -38,7 +38,7 @@ namespace ConnectTests
             // Creating a new EPICSSettings with the same EndPointID should return a the same Guid.
             var endPointId2 = new EndPointID(Protocols.EPICS_CA, "Test:PV");
             var epicSettings2 = new EPICSSettings(
-                                datatype: EPICSDataTypes.CA_DBF_SHORT,
+                                datatype: EPICSDataTypes.DBF_SHORT_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
