@@ -24,17 +24,16 @@ namespace ReadTests
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
             ConvergenceInstance.Hub.Connect(endPointArgs);
-            Task.Delay(1000).Wait();
-            bool readAsyncCalled = false;
+            
+            Int16 data = -1;
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync(endPointArgs.EndPointID, (value) =>
             {
-                CA_SCALAR_SHORT data = (CA_SCALAR_SHORT)Marshal.PtrToStructure(value.dbr, typeof(CA_SCALAR_SHORT));
-                data.value.Should().Be(1);
-                readAsyncCalled = true;
+                data = (Int16)epicSettings.DecodeData(value);
             });
+            Task.Delay(3000).Wait();
             status.Should().Be(EndPointStatus.Okay);
-            readAsyncCalled.Should().BeTrue();
+            data.Should().Be(1);
         }
     }
 }

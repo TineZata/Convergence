@@ -73,8 +73,6 @@ namespace Convergence
                     break;
             }
             return status;
-        }
-
-        
+        } 
     }
 }
