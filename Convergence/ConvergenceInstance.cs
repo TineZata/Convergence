@@ -1,6 +1,8 @@
 ﻿using Convergence.Interfaces;
+using Convergence.IO;
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
+using static Convergence.ReadCallbackDelegate;
 
 namespace Convergence
 {
@@ -48,6 +50,10 @@ namespace Convergence
             
         }
 
+        /// <summary>
+        /// Disconnects the EndPointID from the network.
+        /// </summary>
+        /// <param name="endPointID"></param>
         public void Disconnect(EndPointID endPointID)
         {
             switch (endPointID.Protocol)
@@ -58,6 +64,44 @@ namespace Convergence
             }
         }
 
-        
+        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? callback)
+        {
+            EndPointStatus status = EndPointStatus.UnknownError;
+            switch (endPointID.Protocol)
+            {
+                case Protocols.EPICS_CA:
+                    var result = await EpicsCaReadAsync(endPointID, callback);
+                    switch (result)
+                    {
+                        case EcaType.ECA_NORMAL:
+                            status = EndPointStatus.Okay;
+                            break;
+                        case EcaType.ECA_BADTYPE:
+                            status = EndPointStatus.InvalidDataType;
+                            break;
+                        case EcaType.ECA_NORDACCESS:
+                            status = EndPointStatus.NoReadAccess;
+                            break;
+                        case EcaType.ECA_DISCONN:
+                            status = EndPointStatus.Disconnected;
+                            break;
+                        case EcaType.ECA_UNAVAILINSERV:
+                            status = EndPointStatus.Disconnected;
+                            break;
+                        case EcaType.ECA_TIMEOUT:
+                            status = EndPointStatus.TimedOut;
+                            break;
+                        case EcaType.ECA_BADCOUNT:
+                        case EcaType.ECA_ALLOCMEM:
+                        case EcaType.ECA_TOLARGE:
+                        case EcaType.ECA_GETFAIL:
+                        default:
+                            status = EndPointStatus.UnknownError;
+                            break;
+                    }
+                    break;
+            }
+            return status;
+        } 
     }
 }

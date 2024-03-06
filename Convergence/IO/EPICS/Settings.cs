@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,7 +33,7 @@ namespace Convergence.IO.EPICS
         /// <summary>
         /// The data type.
         /// </summary>
-        public DataTypes DataType { get; set; }
+        public DbFieldType DataType { get; set; }
 
         /// <summary>
         /// Number of elements.
@@ -46,12 +47,35 @@ namespace Convergence.IO.EPICS
         string ? Description { get; set; }
 
 
-        public Settings(DataTypes datatype, bool isServer, int elementCount, bool isPVA)
+        public Settings(DbFieldType datatype, bool isServer, int elementCount, bool isPVA)
         {
             DataType = datatype;
             IsServer = isServer;
             ElementCount = elementCount;
             IsPVA = isPVA;
+        }
+
+        // Decode EPICS data according to the data type.
+        public object DecodeData(ReadCallbackArgs args)
+        {
+            object data = null;
+            Enum.TryParse<DbFieldType>(args.type.ToString(), out var type);
+            switch(type)
+            {
+                case DbFieldType.DBF_SHORT_i16:
+                    Int16[] shortArray = new Int16[args.count];
+                    Marshal.Copy(args.dbr, shortArray, 0, args.count);
+                    if (shortArray.Length == 1)
+                    {
+                        data = shortArray[0];
+                    }
+                    else
+                    {
+                        data = shortArray;
+                    }
+                    return data;
+            }
+            return data;
         }
     }
 }
