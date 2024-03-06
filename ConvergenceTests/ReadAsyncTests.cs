@@ -31,6 +31,10 @@ namespace ReadTests
             {
                 data = (Int16)epicSettings.DecodeData(value);
             });
+            if (status == EndPointStatus.Disconnected)
+            {
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PV");
+            }
             status.Should().Be(EndPointStatus.Okay);
             data.Should().Be(1);
         }
