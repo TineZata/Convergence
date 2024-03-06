@@ -43,6 +43,7 @@ _ReSharper*/
 *.so
 *.dylib
 *.dll
+!CA.dll
 
 # Fortran module files
 *.mod
