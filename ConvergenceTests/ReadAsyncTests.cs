@@ -31,7 +31,6 @@ namespace ReadTests
             {
                 data = (Int16)epicSettings.DecodeData(value);
             });
-            Task.Delay(3000).Wait();
             status.Should().Be(EndPointStatus.Okay);
             data.Should().Be(1);
         }

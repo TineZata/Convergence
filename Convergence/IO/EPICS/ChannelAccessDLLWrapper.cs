@@ -72,7 +72,7 @@ namespace Convergence.IO.EPICS
         // DEFINITELY WORTH A TRY.
         // 
 
-        private const string CA_DLL_NAME = ("CA");
+        private const string CA_DLL_NAME = ("IO\\EPICS\\CA");
 
         //
         // Most of the API calls return an integer 'ECA' code.

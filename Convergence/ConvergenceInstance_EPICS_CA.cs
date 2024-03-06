@@ -10,6 +10,7 @@ namespace Convergence
 {
     public partial class ConvergenceInstance
     {
+        private double _epics_timeout = 0.5;
         /// <summary>
         /// Handles the EPICS CA connection.
         /// </summary>
@@ -17,30 +18,54 @@ namespace Convergence
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public void EpicsCaConnect<T>(EndPointBase<T> endPointArgs)
+        public async Task<EcaType> EpicsCaConnect<T>(EndPointBase<T> endPointArgs)
         {
+            var tcs = new TaskCompletionSource<EcaType>();
             var endPointID = endPointArgs.EndPointID;
             // Check if the CA ID already exists.
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
-                return;
+                tcs.SetResult(EcaType.ECA_NORMAL);
+                return tcs.Task.Result;
             }
             else
             {
                 var epicsSettings = endPointArgs.ConvertToEPICSSettings();
                 // Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
-                EPICSWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
-                switch (EPICSWrapper.ca_create_channel(endPointArgs.EndPointID.EndPointName ?? "", null, out epicsSettings.ChannelHandle))
+                var contextResult = EPICSWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
+                if (contextResult != EcaType.ECA_NORMAL)
                 {
-                    case EcaType.ECA_NORMAL:
-                        // Try add a new ID, if not already added.
-                        endPointID.UniqueId = Guid.NewGuid();
-                        _epics_ca_connections!.TryAdd(endPointID, epicsSettings);
-                        break;
+                    tcs.SetResult(contextResult);
+                    return tcs.Task.Result;
+                }
 
-                    case EcaType.ECA_BADSTR:
-                        throw new ArgumentException("Invalid channel name");
-                        break;
+                var chCreateResult = EPICSWrapper.ca_create_channel(endPointArgs.EndPointID.EndPointName ?? "", null, out epicsSettings.ChannelHandle);
+                if (chCreateResult != EcaType.ECA_NORMAL)
+                {
+                    tcs.SetResult(chCreateResult);
+                    return tcs.Task.Result;
+                }
+
+                if (EPICSWrapper.ca_pend_io(_epics_timeout) == EcaType.ECA_EVDISALLOW)
+                {
+                    tcs.SetResult(EcaType.ECA_EVDISALLOW);
+                    return tcs.Task.Result;
+                }
+
+                if (chCreateResult == EcaType.ECA_NORMAL)
+                {
+                    // Try add a new ID, if not already added.
+                    endPointID.UniqueId = Guid.NewGuid();
+                    if (!_epics_ca_connections!.TryAdd(endPointID, epicsSettings))
+                        tcs.SetResult(EcaType.ECA_NEWCONN); // New or resumed network connection
+                    else
+                        tcs.SetResult(EcaType.ECA_NORMAL);
+                   return tcs.Task.Result; 
+                }
+                else
+                {
+                    tcs.SetResult(chCreateResult);
+                    return tcs.Task.Result;
                 }
             }
         }
@@ -66,57 +91,46 @@ namespace Convergence
             }
         }
 
-        private async Task<EndPointStatus> EpicsCaReadAsync(EndPointID endPointID, ReadCallback? callback)
+        private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, ReadCallback? callback)
         {
-            EndPointStatus status = EndPointStatus.Disconnected;
-            if (_epics_ca_connections!.ContainsKey(endPointID))
+            var tcs = new TaskCompletionSource<EcaType>();
+
+            if (!_epics_ca_connections!.ContainsKey(endPointID))
             {
-                var epicsSettings = _epics_ca_connections[endPointID];
-                if (epicsSettings.ChannelHandle != IntPtr.Zero)
-                { 
-                    EcaType result = await Task.Run(
-                        () => EPICSWrapper.ca_array_get_callback(
-                        pChanID: epicsSettings.ChannelHandle,
-                        type: epicsSettings.DataType,
-                        nElementsWanted: epicsSettings.ElementCount,
-                        valueUpdateCallBack: callback!)
-                        );
-                    switch (result)
-                    {
-                        case EcaType.ECA_NORMAL:
-                            status = EndPointStatus.Okay;
-                            break;
-                        case EcaType.ECA_BADTYPE:
-                            status = EndPointStatus.InvalidDataType;
-                            break;
-                        case EcaType.ECA_NORDACCESS:
-                            status = EndPointStatus.NoReadAccess;
-                            break;
-                        case EcaType.ECA_DISCONN:
-                            status = EndPointStatus.Disconnected;
-                            break;
-                        case EcaType.ECA_UNAVAILINSERV:
-                            status = EndPointStatus.Disconnected;
-                            break;
-                        case EcaType.ECA_TIMEOUT:
-                            status = EndPointStatus.TimedOut;
-                            break;
-                        case EcaType.ECA_BADCOUNT:
-                        case EcaType.ECA_ALLOCMEM:
-                        case EcaType.ECA_TOLARGE:
-                        case EcaType.ECA_GETFAIL:
-                        default:
-                            status = EndPointStatus.UnknownError;
-                            break;
-                    }
-                }
-                // Must call 'flush' otherwise the message isn't sent to the server
-                // immediately. If we forget to call 'flush', the message *will* eventually
-                // get sent, but not until the default timeout period of 30 secs has elapsed,
-                // in which case the callback handler won't be invoked until that 30 secs has elapsed.
-                EPICSWrapper.ca_flush_io();
+                tcs.SetResult(EcaType.ECA_DISCONN);
+                return tcs.Task.Result;
             }
-            return status;
+            var epicsSettings = _epics_ca_connections[endPointID];
+            if (epicsSettings.ChannelHandle == IntPtr.Zero)
+            {
+                tcs.SetResult(EcaType.ECA_BADFUNCPTR);
+                return tcs.Task.Result;
+            }
+            
+            var getResult = EPICSWrapper.ca_array_get_callback(
+            pChanID: epicsSettings.ChannelHandle,
+            type: epicsSettings.DataType,
+            nElementsWanted: epicsSettings.ElementCount,
+            valueUpdateCallBack: callback!);
+            // Do the pend event to block until the callback is invoked.
+            if (EPICSWrapper.ca_pend_event(_epics_timeout) == EcaType.ECA_EVDISALLOW)
+                tcs.SetResult(EcaType.ECA_EVDISALLOW);
+            if (getResult != EcaType.ECA_NORMAL)
+            {
+                tcs.SetResult(getResult);
+                return tcs.Task.Result;
+            }
+            
+            // Must call 'flush' otherwise the message isn't sent to the server
+            // immediately. If we forget to call 'flush', the message *will* eventually
+            // get sent, but not until the default timeout period of 30 secs has elapsed,
+            // in which case the callback handler won't be invoked until that 30 secs has elapsed.
+            var result = EPICSWrapper.ca_flush_io();
+            tcs.SetResult(result);
+
+            
+            
+            return tcs.Task.Result;
         }
 
         private ValueUpdateNotificationEventArgs GetEventArgs(ReadCallback callback)
