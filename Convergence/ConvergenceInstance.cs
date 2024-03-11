@@ -2,7 +2,7 @@
 using Convergence.IO;
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
-using static Convergence.ReadCallbackDelegate;
+using static Convergence.IO.EPICS.EventCallbackDelegate;
 
 namespace Convergence
 {
@@ -47,7 +47,6 @@ namespace Convergence
                     EpicsCaConnect(endPointArgs);
                     break;
             }
-            
         }
 
         /// <summary>
@@ -64,13 +63,19 @@ namespace Convergence
             }
         }
 
-        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? callback)
+        /// <summary>
+        /// Asynchronous read method for all protocols.
+        /// </summary>
+        /// <param name="endPointID"></param>
+        /// <param name="readCallback"></param>
+        /// <returns></returns>
+        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? readCallback)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var result = await EpicsCaReadAsync(endPointID, callback);
+                    var result = await EpicsCaReadAsync(endPointID, readCallback);
                     switch (result)
                     {
                         case EcaType.ECA_NORMAL:
@@ -103,5 +108,88 @@ namespace Convergence
             }
             return status;
         } 
+
+        public async Task<EndPointStatus> WriteAsync(EndPointID endPointID, object value, WriteCallback? callback)
+        {
+            EndPointStatus status = EndPointStatus.UnknownError;
+            switch (endPointID.Protocol)
+            {
+                case Protocols.EPICS_CA:
+                    var result = await EpicsCaWriteAsync(endPointID, value, callback);
+                    switch (result)
+                    {
+                        case EcaType.ECA_NORMAL:
+                            status = EndPointStatus.Okay;
+                            break;
+                        case EcaType.ECA_BADTYPE:
+                            status = EndPointStatus.InvalidDataType;
+                            break;
+                        case EcaType.ECA_NOWTACCESS:
+                            status = EndPointStatus.NoWriteAccess;
+                            break;
+                        case EcaType.ECA_DISCONN:
+                            status = EndPointStatus.Disconnected;
+                            break;
+                        case EcaType.ECA_UNAVAILINSERV:
+                            status = EndPointStatus.Disconnected;
+                            break;
+                        case EcaType.ECA_TIMEOUT:
+                            status = EndPointStatus.TimedOut;
+                            break;
+                        case EcaType.ECA_BADCOUNT:
+                        case EcaType.ECA_ALLOCMEM:
+                        case EcaType.ECA_TOLARGE:
+                        case EcaType.ECA_PUTFAIL:
+                        default:
+                            status = EndPointStatus.UnknownError;
+                            break;
+                    }
+                    break;
+            }
+            return status;
+        }
+
+        private async Task<EndPointStatus> WriteAsync <T>(EndPointID endPointID, T value, WriteCallback? callback)
+        {
+            EndPointStatus status = EndPointStatus.UnknownError;
+            if (value == null)
+                return EndPointStatus.InvalidDataType;
+            switch (endPointID.Protocol)
+            {
+                case Protocols.EPICS_CA:
+                    var result = await EpicsCaWriteAsync(endPointID, value, callback);
+                    switch (result)
+                    {
+                        case EcaType.ECA_NORMAL:
+                            status = EndPointStatus.Okay;
+                            break;
+                        case EcaType.ECA_BADTYPE:
+                            status = EndPointStatus.InvalidDataType;
+                            break;
+                        case EcaType.ECA_NOWTACCESS:
+                            status = EndPointStatus.NoWriteAccess;
+                            break;
+                        case EcaType.ECA_DISCONN:
+                            status = EndPointStatus.Disconnected;
+                            break;
+                        case EcaType.ECA_UNAVAILINSERV:
+                            status = EndPointStatus.Disconnected;
+                            break;
+                        case EcaType.ECA_TIMEOUT:
+                            status = EndPointStatus.TimedOut;
+                            break;
+                        case EcaType.ECA_BADCOUNT:
+                        case EcaType.ECA_ALLOCMEM:
+                        case EcaType.ECA_TOLARGE:
+                        case EcaType.ECA_PUTFAIL:
+                        default:
+                            status = EndPointStatus.UnknownError;
+                            break;
+                    }
+                    break;
+            }
+            return status;
+        }
+        
     }
 }

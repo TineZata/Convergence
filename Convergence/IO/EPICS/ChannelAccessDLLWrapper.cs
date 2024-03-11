@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using Conversion.IO.EPICS;
 using FluentAssertions;
-using static Convergence.ReadCallbackDelegate;
+using static Convergence.IO.EPICS.EventCallbackDelegate;
 
 namespace Convergence.IO.EPICS
 {
@@ -320,7 +320,7 @@ namespace Convergence.IO.EPICS
             }
             else
             {
-                throw new InvalidCastException("ca_array_get: Unable to cast EcaType from Int32");
+                return EcaType.ECA_GETFAIL;
             }
             [DllImport(CA_DLL_NAME)]
             // Read a scalar or array value from a process variable.
@@ -350,7 +350,7 @@ namespace Convergence.IO.EPICS
         public static EcaType ca_array_get_callback(
           this IntPtr pChanID,
           DbFieldType type,
-          int nElementsWanted,
+          int nElements,
           ReadCallback valueUpdateCallBack
         )
         {
@@ -365,7 +365,7 @@ namespace Convergence.IO.EPICS
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(
                 ca_array_get_callback(
                   (Int16)type,
-                  (UInt32)nElementsWanted,
+                  (UInt32)nElements,
                   pChanID,
                   valueUpdateCallBack,
                   userArg)
@@ -375,7 +375,7 @@ namespace Convergence.IO.EPICS
             }
             else
             {
-                throw new InvalidCastException("ca_array_get_callback: Unable to cast EcaType from Int32");
+                return EcaType.ECA_GETFAIL;
             }
             [DllImport(CA_DLL_NAME)]
             // Read a scalar or array value from a process variable.
@@ -414,13 +414,13 @@ namespace Convergence.IO.EPICS
         public static unsafe EcaType ca_array_put(
           this IntPtr pChanID,
           DbRecordRequestType dbrType,
-          int nElementsOfThatTypeWanted,
+          int nElements,
           void* pValueToWrite // New channel value is copied from here
         )
         {
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put(
               (short)dbrType,
-              (uint)nElementsOfThatTypeWanted,
+              (uint)nElements,
               pChanID,
               (IntPtr)pValueToWrite   // New channel value is copied from here
             )).ToString(), out EcaType result))
@@ -429,7 +429,7 @@ namespace Convergence.IO.EPICS
             }
             else
             {
-                throw new InvalidCastException("ca_array_put: Unable to cast EcaType from Int32");
+                return EcaType.ECA_PUTFAIL;
             }
             [DllImport(CA_DLL_NAME)]
             // Write a scalar or array value to a process variable.
@@ -460,19 +460,27 @@ namespace Convergence.IO.EPICS
 
         public unsafe static EcaType ca_array_put_callback(
           this IntPtr pChanID,
-          DbRecordRequestType dbrType,
-          int nElementsOfThatTypeWanted,
-          void* pValueToWrite,       // New channel value is copied from here
-          ReadCallback valueUpdateCallback, // Event will be raised when successful write is confirmed
-          int userArg
+          DbFieldType dbrType,
+          int nElements,
+          object valueToWrite,       
+          WriteCallback writeCallback // Event will be raised when successful write is confirmed
         )
         {
+
+            // Check that the channel is connected
+            if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
+            // Check that write access is allowed
+            if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
+            // Check that the data type is valid
+            if (dbrType == ca_field_type(pChanID)) return EcaType.ECA_BADTYPE;
+            // assign userArg to ca_puser(pChanID)
+            var userArg = ca_puser(pChanID);
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put_callback(
-              (short)dbrType,
-              (uint)nElementsOfThatTypeWanted,
+              (Int16)dbrType,
+              (uint)nElements,
               pChanID,
-              (IntPtr)pValueToWrite, // New value is copied from here
-              valueUpdateCallback, // Event will be raised when successful write is confirmed
+              (IntPtr)valueToWrite, // New value is copied from here
+              writeCallback, // Event will be raised when successful write is confirmed
               (IntPtr)userArg
             )).ToString(), out EcaType result))
             {
@@ -480,7 +488,7 @@ namespace Convergence.IO.EPICS
             }
             else
             {
-                throw new InvalidCastException("ca_array_put_callback: Unable to cast EcaType from Int32");
+                return EcaType.ECA_PUTFAIL;
             }
             [DllImport(CA_DLL_NAME)]
             // This routine functions identically to the original 'ca_put' request 
@@ -512,7 +520,7 @@ namespace Convergence.IO.EPICS
               UInt32 count,
               IntPtr pchanID,
               IntPtr pValue,         // New value is copied from here
-              ReadCallback pEventCallBack, // Event will be raised when successful write is confirmed
+              WriteCallback pEventCallBack, // Event will be raised when successful write is confirmed
               IntPtr userArg
             );
         }

@@ -56,7 +56,7 @@ namespace Convergence.IO.EPICS
         }
 
         // Decode EPICS data according to the data type.
-        public object DecodeData(ReadCallbackArgs args)
+        public object DecodeData(EventCallbackArgs args)
         {
             object data = null;
             Enum.TryParse<DbFieldType>(args.type.ToString(), out var type);

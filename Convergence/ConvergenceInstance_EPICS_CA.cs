@@ -4,7 +4,8 @@ using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Convergence.IO;
-using static Convergence.ReadCallbackDelegate;
+using static Convergence.IO.EPICS.EventCallbackDelegate;
+using System.Threading;
 
 namespace Convergence
 {
@@ -110,7 +111,7 @@ namespace Convergence
             var getResult = EPICSWrapper.ca_array_get_callback(
             pChanID: epicsSettings.ChannelHandle,
             type: epicsSettings.DataType,
-            nElementsWanted: epicsSettings.ElementCount,
+            nElements: epicsSettings.ElementCount,
             valueUpdateCallBack: callback!);
             // Do the pend event to block until the callback is invoked.
             if (EPICSWrapper.ca_pend_event(_epics_timeout) == EcaType.ECA_EVDISALLOW)
@@ -127,8 +128,6 @@ namespace Convergence
             // in which case the callback handler won't be invoked until that 30 secs has elapsed.
             var result = EPICSWrapper.ca_flush_io();
             tcs.SetResult(result);
-
-            
             
             return tcs.Task.Result;
         }
@@ -146,6 +145,49 @@ namespace Convergence
         {
             Enum.TryParse(type.ToString(), out DbRecordRequestType dbReqtype);
             return dbReqtype;
+        }
+
+        private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, object value, WriteCallback? callback)
+        {
+            var tcs = new TaskCompletionSource<EcaType>();
+            if (value == null || callback == null)
+            {
+                tcs.SetResult(EcaType.ECA_BADFUNCPTR);
+                return tcs.Task;
+            }
+            if (!_epics_ca_connections!.ContainsKey(endPointID))
+            {
+                tcs.SetResult(EcaType.ECA_DISCONN);
+                return tcs.Task;
+            }
+            else 
+            {
+                var epicsSettings = _epics_ca_connections[endPointID];
+                if (epicsSettings.ChannelHandle == IntPtr.Zero)
+                {
+                    tcs.SetResult(EcaType.ECA_BADFUNCPTR);
+                    return tcs.Task;
+                }
+                var result = EPICSWrapper.ca_array_put_callback(
+                                pChanID: epicsSettings.ChannelHandle,
+                                dbrType: epicsSettings.DataType,
+                                nElements: epicsSettings.ElementCount,
+                                valueToWrite: value,
+                                writeCallback: callback);
+                                                                                                                   valueUpdateCallBack: callback!);
+                if (result != EcaType.ECA_NORMAL)
+                {
+                    tcs.SetResult(result);
+                    return tcs.Task;
+                }
+                // Must call 'flush' otherwise the message isn't sent to the server
+                // immediately. If we forget to call 'flush', the message *will* eventually
+                // get sent, but not until the default timeout period of 30 secs has elapsed,
+                // in which case the callback handler won't be invoked until that 30 secs has elapsed.
+                var flushResult = EPICSWrapper.ca_flush_io();
+                tcs.SetResult(flushResult);
+                return tcs.Task;
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Convergence.ReadCallbackDelegate;
+using static Convergence.IO.EPICS.EventCallbackDelegate;
 
 namespace Convergence.Interfaces
 {
@@ -25,6 +25,22 @@ namespace Convergence.Interfaces
         /// <param name="endPointID"></param>
         public void Disconnect(EndPointID endPointID);
 
+        /// <summary>
+        /// Asynchronously reads the value of the EndPointID and returns the value in a callback.
+        /// </summary>
+        /// <param name="endPointID"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
         public Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? callback);
+
+        /// <summary>
+        /// Asynchronously writes the value to the EndPointID and returns and acknowledgement in a callback.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endPointID"></param>
+        /// <param name="value"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, T value, WriteCallback? callback);
     }
 }
