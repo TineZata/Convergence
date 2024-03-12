@@ -147,10 +147,10 @@ namespace Convergence
             return dbReqtype;
         }
 
-        private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, object value, WriteCallback? callback)
+        private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, WriteCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-            if (value == null || callback == null)
+            if (pvalue == null || callback == null)
             {
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return tcs.Task;
@@ -172,9 +172,8 @@ namespace Convergence
                                 pChanID: epicsSettings.ChannelHandle,
                                 dbrType: epicsSettings.DataType,
                                 nElements: epicsSettings.ElementCount,
-                                valueToWrite: value,
+                                ptrValueToWrite: pvalue,
                                 writeCallback: callback);
-                                                                                                                   valueUpdateCallBack: callback!);
                 if (result != EcaType.ECA_NORMAL)
                 {
                     tcs.SetResult(result);

@@ -36,11 +36,10 @@ namespace Convergence.Interfaces
         /// <summary>
         /// Asynchronously writes the value to the EndPointID and returns and acknowledgement in a callback.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="endPointID"></param>
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, T value, WriteCallback? callback);
+        public Task<EndPointStatus> WriteAsync(EndPointID endPointID, IntPtr value, WriteCallback? callback);
     }
 }

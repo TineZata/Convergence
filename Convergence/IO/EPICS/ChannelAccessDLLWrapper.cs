@@ -462,7 +462,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbFieldType dbrType,
           int nElements,
-          object valueToWrite,       
+          IntPtr ptrValueToWrite,       
           WriteCallback writeCallback // Event will be raised when successful write is confirmed
         )
         {
@@ -479,7 +479,7 @@ namespace Convergence.IO.EPICS
               (Int16)dbrType,
               (uint)nElements,
               pChanID,
-              (IntPtr)valueToWrite, // New value is copied from here
+              (IntPtr)ptrValueToWrite, // New value is copied from here
               writeCallback, // Event will be raised when successful write is confirmed
               (IntPtr)userArg
             )).ToString(), out EcaType result))
