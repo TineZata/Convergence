@@ -2,7 +2,7 @@
 using Convergence.IO;
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
-using static Convergence.IO.EPICS.EventCallbackDelegate;
+using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 
 namespace Convergence
 {
@@ -69,7 +69,7 @@ namespace Convergence
         /// <param name="endPointID"></param>
         /// <param name="readCallback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? readCallback)
+        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, EventCallbackDelegate? readCallback)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
             switch (endPointID.Protocol)

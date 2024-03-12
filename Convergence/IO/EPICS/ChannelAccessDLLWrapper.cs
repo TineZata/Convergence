@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using Conversion.IO.EPICS;
 using FluentAssertions;
-using static Convergence.IO.EPICS.EventCallbackDelegate;
+using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 
 namespace Convergence.IO.EPICS
 {
@@ -351,7 +351,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbFieldType type,
           int nElements,
-          ReadCallback valueUpdateCallBack
+          EventCallbackDelegate valueUpdateCallBack
         )
         {
             // Check that the channel is connected
@@ -401,7 +401,7 @@ namespace Convergence.IO.EPICS
               Int16 type,
               UInt32 count,
               IntPtr pChanID,
-              ReadCallback pEventCallBack,
+              EventCallbackDelegate pEventCallBack,
               IntPtr userArg
             );
         }
@@ -534,7 +534,7 @@ namespace Convergence.IO.EPICS
           DbRecordRequestType dbrType,
           int count,
           WhichFieldsToMonitor whichFieldsToMonitor,
-          ReadCallback valueUpdateCallback,
+          EventCallbackDelegate valueUpdateCallback,
           int userArg
         )
         {
@@ -577,7 +577,7 @@ namespace Convergence.IO.EPICS
               UInt32 count,
               IntPtr pChanID,
               uint mask,
-              ReadCallback pEventCallBack,
+              EventCallbackDelegate pEventCallBack,
               IntPtr userArg,
               out IntPtr pEvid
             );

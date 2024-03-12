@@ -4,7 +4,7 @@ using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Convergence.IO;
-using static Convergence.IO.EPICS.EventCallbackDelegate;
+using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 using System.Threading;
 
 namespace Convergence
@@ -92,7 +92,7 @@ namespace Convergence
             }
         }
 
-        private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, ReadCallback? callback)
+        private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, EventCallbackDelegate? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
 
@@ -132,7 +132,7 @@ namespace Convergence
             return tcs.Task.Result;
         }
 
-        private ValueUpdateNotificationEventArgs GetEventArgs(ReadCallback callback)
+        private ValueUpdateNotificationEventArgs GetEventArgs(EventCallbackDelegate callback)
         {
             ParameterInfo[] infos = callback.Method.GetParameters();
 
