@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Convergence
+namespace Convergence.IO.EPICS
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct ReadCallbackArgs
+    public struct EventCallbackArgs
     {
-        public IntPtr usr;
-        public IntPtr chid;
+        public nint usr;
+        public nint chid;
 #if LP64
       public long type ;
       public long count ;
@@ -19,13 +19,16 @@ namespace Convergence
         public int type;
         public int count;
 #endif
-        public readonly IntPtr dbr;
+        public readonly nint dbr;
         public int status;
     }
 
-    public class ReadCallbackDelegate
+    public class EventCallbackDelegate
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void ReadCallback(ReadCallbackArgs data);
+        public delegate void ReadCallback(EventCallbackArgs data);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void WriteCallback(EventCallbackArgs data); 
     }
 }
