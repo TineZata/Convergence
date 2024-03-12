@@ -69,7 +69,7 @@ namespace Convergence
         /// <param name="endPointID"></param>
         /// <param name="readCallback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, EventCallbackDelegate? readCallback)
+        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, EventCallbackDelegate? readCallback)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
             switch (endPointID.Protocol)
@@ -116,7 +116,7 @@ namespace Convergence
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> WriteAsync(EndPointID endPointID, IntPtr value, WriteCallback? callback)
+        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, WriteCallback? callback)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
             switch (endPointID.Protocol)
@@ -154,6 +154,16 @@ namespace Convergence
                     break;
             }
             return status;
+        }
+
+        public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, EventCallbackDelegate.ReadCallback<T>? callback)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, nint value, EventCallbackDelegate.WriteCallback<T>? callback)
+        {
+            throw new NotImplementedException();
         }
     }
 }
