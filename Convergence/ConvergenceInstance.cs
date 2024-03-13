@@ -2,6 +2,7 @@
 using Convergence.IO;
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
+using static Convergence.EventCallbackDelegate;
 using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 
 namespace Convergence
@@ -63,19 +64,23 @@ namespace Convergence
             }
         }
 
+
         /// <summary>
         /// Asynchronous read method for all protocols.
         /// </summary>
         /// <param name="endPointID"></param>
         /// <param name="readCallback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, EventCallbackDelegate? readCallback)
+        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T? readCallback)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
+            if (readCallback == null)
+                return status;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var result = await EpicsCaReadAsync(endPointID, readCallback);
+                    var cb = readCallback as CaReadCallback;
+                    var result = await EpicsCaReadAsync(endPointID, cb);
                     switch (result)
                     {
                         case EcaType.ECA_NORMAL:
@@ -107,7 +112,7 @@ namespace Convergence
                     break;
             }
             return status;
-        } 
+        }
 
         /// <summary>
         /// Asynchronous write method for all protocols.
@@ -116,54 +121,49 @@ namespace Convergence
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, WriteCallback? callback)
+        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback)
         {
-            EndPointStatus status = EndPointStatus.UnknownError;
+            Task<EndPointStatus> status = Task.FromResult(EndPointStatus.UnknownError);
+            if (callback == null)
+                return await status;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var result = await EpicsCaWriteAsync(endPointID, value, callback);
-                    switch (result)
+                    var cb = callback as CaWriteCallback;
+                    if (cb == null)
+                        return await status;  
+                    var result = EpicsCaWriteAsync(endPointID, value, cb);
+                    switch (result.Result)
                     {
                         case EcaType.ECA_NORMAL:
-                            status = EndPointStatus.Okay;
+                            status = Task.FromResult(EndPointStatus.Okay);
                             break;
                         case EcaType.ECA_BADTYPE:
-                            status = EndPointStatus.InvalidDataType;
+                            status = Task.FromResult(EndPointStatus.InvalidDataType);
                             break;
                         case EcaType.ECA_NOWTACCESS:
-                            status = EndPointStatus.NoWriteAccess;
+                            status = Task.FromResult(EndPointStatus.NoWriteAccess);
                             break;
                         case EcaType.ECA_DISCONN:
-                            status = EndPointStatus.Disconnected;
+                            status = Task.FromResult(EndPointStatus.Disconnected);
                             break;
                         case EcaType.ECA_UNAVAILINSERV:
-                            status = EndPointStatus.Disconnected;
+                            status = Task.FromResult(EndPointStatus.Disconnected);
                             break;
                         case EcaType.ECA_TIMEOUT:
-                            status = EndPointStatus.TimedOut;
+                            status = Task.FromResult(EndPointStatus.TimedOut);
                             break;
                         case EcaType.ECA_BADCOUNT:
                         case EcaType.ECA_ALLOCMEM:
                         case EcaType.ECA_TOLARGE:
                         case EcaType.ECA_PUTFAIL:
                         default:
-                            status = EndPointStatus.UnknownError;
+                            status = Task.FromResult(EndPointStatus.UnknownError);
                             break;
                     }
                     break;
             }
-            return status;
-        }
-
-        public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, EventCallbackDelegate.ReadCallback<T>? callback)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, nint value, EventCallbackDelegate.WriteCallback<T>? callback)
-        {
-            throw new NotImplementedException();
+            return await status;
         }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Convergence;
+using EPICSCaWriteCallback = Convergence.IO.EPICS.CaEventCallbackDelegate.CaWriteCallback;
+using EPICSCaReadCallback = Convergence.IO.EPICS.CaEventCallbackDelegate.CaReadCallback;
 using EPICSSettings = Convergence.IO.EPICS.Settings;
 using EPICSDataTypes = Convergence.IO.EPICS.DbFieldType;
 using System.Net.NetworkInformation;
@@ -31,17 +33,17 @@ namespace WriteTests
             {
                 IntPtr valuePtr = handle.AddrOfPinnedObject();
                 // Write async and await a callback
-                EndPointStatus status = await ConvergenceInstance.Hub.WriteAsync(endPointArgs.EndPointID, valuePtr, (_) =>
+                Task<EndPointStatus> status = await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
                 {
                     // Read the value back to verify the write
-                    var readStatus = ConvergenceInstance.Hub.ReadAsync(endPointArgs.EndPointID, (value) =>
+                    var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
                         var data = (Int16)epicSettings.DecodeData(value);
                         data.Should().Be(testValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
                 });
-                if (status == EndPointStatus.Disconnected)
+                if (status.Result == EndPointStatus.Disconnected)
                 {
                     throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PV");
                 }

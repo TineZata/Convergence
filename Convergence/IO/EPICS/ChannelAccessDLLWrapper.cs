@@ -351,7 +351,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbFieldType type,
           int nElements,
-          EventCallbackDelegate valueUpdateCallBack
+          CaReadCallback valueUpdateCallBack
         )
         {
             // Check that the channel is connected
@@ -401,7 +401,7 @@ namespace Convergence.IO.EPICS
               Int16 type,
               UInt32 count,
               IntPtr pChanID,
-              EventCallbackDelegate pEventCallBack,
+              CaReadCallback pEventCallBack,
               IntPtr userArg
             );
         }
@@ -463,7 +463,7 @@ namespace Convergence.IO.EPICS
           DbFieldType dbrType,
           int nElements,
           IntPtr ptrValueToWrite,       
-          WriteCallback writeCallback // Event will be raised when successful write is confirmed
+          CaWriteCallback writeCallback // Event will be raised when successful write is confirmed
         )
         {
 
@@ -520,7 +520,7 @@ namespace Convergence.IO.EPICS
               UInt32 count,
               IntPtr pchanID,
               IntPtr pValue,         // New value is copied from here
-              WriteCallback pEventCallBack, // Event will be raised when successful write is confirmed
+              CaWriteCallback pEventCallBack, // Event will be raised when successful write is confirmed
               IntPtr userArg
             );
         }

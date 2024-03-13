@@ -92,7 +92,7 @@ namespace Convergence
             }
         }
 
-        private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, EventCallbackDelegate? callback)
+        private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, CaReadCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
 
@@ -147,7 +147,7 @@ namespace Convergence
             return dbReqtype;
         }
 
-        private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, WriteCallback? callback)
+        private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, CaWriteCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
             if (pvalue == null || callback == null)
