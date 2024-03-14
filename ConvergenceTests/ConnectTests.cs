@@ -19,7 +19,7 @@ namespace ConnectTests
                 isServer: false, 
                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.Connect(endPointArgs);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 
@@ -33,7 +33,7 @@ namespace ConnectTests
                 isServer: false,
                 isPVA: false);
             var endPointArgs1 = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.Connect(endPointArgs1);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs1);
             endPointArgs1.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
             // Creating a new EPICSSettings with the same EndPointID should return a the same Guid.
             var endPointId2 = new EndPointID(Protocols.EPICS_CA, "Test:PV");
@@ -44,7 +44,7 @@ namespace ConnectTests
                                 isPVA: false);
             var endPointArgs2 = new EndPointBase<EPICSSettings> { EndPointID = endPointId2, Settings = epicSettings2 };
             // Calling Connect again with the same EndPointID should return a different Guid.
-           ConvergenceInstance.Hub.Connect(endPointArgs2);
+           ConvergenceInstance.Hub.ConnectAsync(endPointArgs2);
             endPointArgs2.EndPointID.UniqueId.Should().NotBe(endPointArgs1.EndPointID.UniqueId);
         }
 

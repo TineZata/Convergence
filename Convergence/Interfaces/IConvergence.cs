@@ -18,7 +18,7 @@ namespace Convergence.Interfaces
         /// </summary>
         /// <param name="endPointArgs"></param>
         /// <returns>Guid</returns>
-        void Connect<T>(EndPointBase<T> endPointArgs);
+        public Task<EndPointStatus> ConnectAsync<T>(EndPointBase<T> endPointArgs);
 
         /// <summary>
         /// Disconnects the EndPointID from the network.
@@ -51,6 +51,6 @@ namespace Convergence.Interfaces
         /// <param name="monitorType"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> SubscribeAsycn<T>(EndPointID endPointID, T? monitorType, T? callback);
+        public Task<EndPointStatus> SubscribeAsync<T1, T2>(EndPointID endPointID, T1? monitorType, T2? callback);
     }
 }

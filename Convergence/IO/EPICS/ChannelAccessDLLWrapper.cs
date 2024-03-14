@@ -533,9 +533,11 @@ namespace Convergence.IO.EPICS
           DbFieldType dbrType,
           int count,
           CaMonitorTypes? whichFieldsToMonitor,
-          CaMonitorCallback valueUpdateCallback
+          CaMonitorCallback valueUpdateCallback,
+          out IntPtr pEvid
         )
         {
+            pEvid = IntPtr.Zero;
             // Check that the channel is connected
             if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
             // Check that read access is allowed
@@ -550,7 +552,7 @@ namespace Convergence.IO.EPICS
               (uint)whichFieldsToMonitor,
               valueUpdateCallback,
               (System.IntPtr)userArg,
-              out _
+              out pEvid
             )).ToString(), out EcaType result))
             {
                 return result;

@@ -42,14 +42,15 @@ namespace Convergence
         /// <typeparam name="T"></typeparam>
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
-        public void Connect<T>(EndPointBase<T> endPointArgs)
+        public async Task<EndPointStatus> ConnectAsync<T>(EndPointBase<T> endPointArgs)
         {
             switch (endPointArgs.EndPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    EpicsCaConnect(endPointArgs);
-                    break;
+                    var result = await EpicsCaConnectAsync(endPointArgs);
+                    return GetEPICSEndPointStatus(result);
             }
+            return EndPointStatus.UnknownError;
         }
 
         /// <summary>
@@ -74,14 +75,13 @@ namespace Convergence
         /// <returns></returns>
         public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T? readCallback)
         {
-            EndPointStatus status = EndPointStatus.UnknownError;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
                     var result = await EpicsCaReadAsync(endPointID, readCallback as CaReadCallback);
                     return GetEPICSEndPointStatus(result);
             }
-            return status;
+            return EndPointStatus.UnknownError;
         }
 
         /// <summary>
@@ -93,26 +93,24 @@ namespace Convergence
         /// <returns></returns>
         public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback)
         {
-            EndPointStatus status = EndPointStatus.UnknownError;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
                     var result = await EpicsCaWriteAsync(endPointID, value, callback as CaWriteCallback);
                     return GetEPICSEndPointStatus(result);
             }
-            return status;
+            return EndPointStatus.UnknownError;
         }
 
-        public async Task<EndPointStatus> SubscribeAsycn<T>(EndPointID endPointID, T? monitorType, T? callback)
+        public async Task<EndPointStatus> SubscribeAsync<T1, T2>(EndPointID endPointID, T1? monitorType, T2? callback)
         {
-            EndPointStatus status = EndPointStatus.UnknownError;
             switch(endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
                     var result = await EpicsCaMonitor(endPointID, monitorType as CaMonitorTypes?, callback as CaMonitorCallback);
                     return GetEPICSEndPointStatus(result);
             }
-            return status;
+            return EndPointStatus.UnknownError;
         }
 
         

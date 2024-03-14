@@ -21,7 +21,7 @@ namespace Convergence
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<EcaType> EpicsCaConnect<T>(EndPointBase<T> endPointArgs)
+        public async Task<EcaType> EpicsCaConnectAsync<T>(EndPointBase<T> endPointArgs)
         {
             var tcs = new TaskCompletionSource<EcaType>();
             var endPointID = endPointArgs.EndPointID;
@@ -236,7 +236,26 @@ namespace Convergence
                                 dbrType: epicsSettings.DataType,
                                 count: epicsSettings.ElementCount,
                                 whichFieldsToMonitor: monType,
-                                valueUpdateCallback: callback);
+                                valueUpdateCallback: callback,
+                                out epicsSettings.MonitorHandle);
+                if (result != EcaType.ECA_NORMAL)
+                {
+                    tcs.SetResult(result);
+                    return tcs.Task;
+                }
+                // Do the pend event to block until the callback is invoked.
+                result = EPICSWrapper.ca_pend_event(_epics_timeout);
+                if (result == EcaType.ECA_TIMEOUT) // ca_pend_event() returns ECA_TIMEOUT if successful.
+                    tcs.SetResult(EcaType.ECA_NORMAL);
+                else
+                    tcs.SetResult(result);
+
+                // Must call 'flush' otherwise the message isn't sent to the server
+                // immediately. If we forget to call 'flush', the message *will* eventually
+                // get sent, but not until the default timeout period of 30 secs has elapsed,
+                // in which case the callback handler won't be invoked until that 30 secs has elapsed.
+                // result = EPICSWrapper.ca_flush_io();
+                //tcs.SetResult(result);
             }
             return tcs.Task;
         }

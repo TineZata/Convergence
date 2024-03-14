@@ -22,7 +22,7 @@ namespace DisconnectTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs1 = new EndPointBase<EPICSSettings> { EndPointID = endPointId1, Settings = epicSettings1 };
-            ConvergenceInstance.Hub.Connect(endPointArgs1);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs1);
             endPointArgs1.EndPointID.UniqueId .Should().NotBe(Guid.Empty);
             // Calling Disconnect should remove the EndPointID from the Hub.
             ConvergenceInstance.Hub.Disconnect(endPointArgs1.EndPointID);
@@ -35,7 +35,7 @@ namespace DisconnectTests
                                 isPVA: false);
             var endPointArgs2 = new EndPointBase<EPICSSettings> { EndPointID = endPointId2, Settings = epicSettings2 };
             // Calling Connect again with the same EndPointID should return a different Guid.
-            ConvergenceInstance.Hub.Connect(endPointArgs2);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs2);
             endPointArgs2.EndPointID.UniqueId.Should().NotBe(endPointArgs1.EndPointID.UniqueId);
         }
     }
