@@ -2,7 +2,8 @@
 using Convergence.IO;
 using Convergence.IO.EPICS;
 using System.Collections.Concurrent;
-using static Convergence.IO.EPICS.EventCallbackDelegate;
+using static Convergence.EventCallbackDelegate;
+using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 
 namespace Convergence
 {
@@ -63,19 +64,23 @@ namespace Convergence
             }
         }
 
+
         /// <summary>
         /// Asynchronous read method for all protocols.
         /// </summary>
         /// <param name="endPointID"></param>
         /// <param name="readCallback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback? readCallback)
+        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T? readCallback)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
+            if (readCallback == null)
+                return status;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var result = await EpicsCaReadAsync(endPointID, readCallback);
+                    var cb = readCallback as CaReadCallback;
+                    var result = await EpicsCaReadAsync(endPointID, cb);
                     switch (result)
                     {
                         case EcaType.ECA_NORMAL:
@@ -107,7 +112,7 @@ namespace Convergence
                     break;
             }
             return status;
-        } 
+        }
 
         /// <summary>
         /// Asynchronous write method for all protocols.
@@ -116,14 +121,19 @@ namespace Convergence
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> WriteAsync(EndPointID endPointID, IntPtr value, WriteCallback? callback)
+        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
+            if (callback == null)
+                return status;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var result = await EpicsCaWriteAsync(endPointID, value, callback);
-                    switch (result)
+                    var cb = callback as CaWriteCallback;
+                    if (cb == null)
+                        return status;  
+                    var result = EpicsCaWriteAsync(endPointID, value, cb);
+                    switch (result.Result)
                     {
                         case EcaType.ECA_NORMAL:
                             status = EndPointStatus.Okay;

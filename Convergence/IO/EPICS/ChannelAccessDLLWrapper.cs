@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using Conversion.IO.EPICS;
 using FluentAssertions;
-using static Convergence.IO.EPICS.EventCallbackDelegate;
+using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 
 namespace Convergence.IO.EPICS
 {
@@ -351,7 +351,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbFieldType type,
           int nElements,
-          ReadCallback valueUpdateCallBack
+          CaReadCallback valueUpdateCallBack
         )
         {
             // Check that the channel is connected
@@ -401,7 +401,7 @@ namespace Convergence.IO.EPICS
               Int16 type,
               UInt32 count,
               IntPtr pChanID,
-              ReadCallback pEventCallBack,
+              CaReadCallback pEventCallBack,
               IntPtr userArg
             );
         }
@@ -463,7 +463,7 @@ namespace Convergence.IO.EPICS
           DbFieldType dbrType,
           int nElements,
           IntPtr ptrValueToWrite,       
-          WriteCallback writeCallback // Event will be raised when successful write is confirmed
+          CaWriteCallback writeCallback // Event will be raised when successful write is confirmed
         )
         {
 
@@ -520,7 +520,7 @@ namespace Convergence.IO.EPICS
               UInt32 count,
               IntPtr pchanID,
               IntPtr pValue,         // New value is copied from here
-              WriteCallback pEventCallBack, // Event will be raised when successful write is confirmed
+              CaWriteCallback pEventCallBack, // Event will be raised when successful write is confirmed
               IntPtr userArg
             );
         }
@@ -534,7 +534,7 @@ namespace Convergence.IO.EPICS
           DbRecordRequestType dbrType,
           int count,
           WhichFieldsToMonitor whichFieldsToMonitor,
-          ReadCallback valueUpdateCallback,
+          EventCallbackDelegate valueUpdateCallback,
           int userArg
         )
         {
@@ -577,7 +577,7 @@ namespace Convergence.IO.EPICS
               UInt32 count,
               IntPtr pChanID,
               uint mask,
-              ReadCallback pEventCallBack,
+              EventCallbackDelegate pEventCallBack,
               IntPtr userArg,
               out IntPtr pEvid
             );

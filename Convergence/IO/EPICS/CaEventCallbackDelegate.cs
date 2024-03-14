@@ -23,12 +23,12 @@ namespace Convergence.IO.EPICS
         public int status;
     }
 
-    public class EventCallbackDelegate
+    public class CaEventCallbackDelegate
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void ReadCallback(EventCallbackArgs data);
+        public delegate void CaReadCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void WriteCallback(EventCallbackArgs data); 
+        public delegate void CaWriteCallback(EventCallbackArgs data); 
     }
 }

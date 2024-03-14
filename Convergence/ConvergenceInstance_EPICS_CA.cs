@@ -4,7 +4,7 @@ using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Convergence.IO;
-using static Convergence.IO.EPICS.EventCallbackDelegate;
+using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 using System.Threading;
 
 namespace Convergence
@@ -92,7 +92,7 @@ namespace Convergence
             }
         }
 
-        private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, ReadCallback? callback)
+        private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, CaReadCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
 
@@ -132,22 +132,7 @@ namespace Convergence
             return tcs.Task.Result;
         }
 
-        private ValueUpdateNotificationEventArgs GetEventArgs(ReadCallback callback)
-        {
-            ParameterInfo[] infos = callback.Method.GetParameters();
-
-            IntPtr argsPtr = (IntPtr)infos[0].DefaultValue; // Get actual IntPtr value
-
-            return (ValueUpdateNotificationEventArgs)Marshal.PtrToStructure(argsPtr, typeof(ValueUpdateNotificationEventArgs));
-        }
-
-        private DbRecordRequestType GetDbFieldType(DataTypes type)
-        {
-            Enum.TryParse(type.ToString(), out DbRecordRequestType dbReqtype);
-            return dbReqtype;
-        }
-
-        private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, WriteCallback? callback)
+        private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, CaWriteCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
             if (pvalue == null || callback == null)
