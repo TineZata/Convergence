@@ -33,7 +33,7 @@ namespace WriteTests
             {
                 IntPtr valuePtr = handle.AddrOfPinnedObject();
                 // Write async and await a callback
-                Task<EndPointStatus> status = await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
+                EndPointStatus status = await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
                 {
                     // Read the value back to verify the write
                     var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
@@ -43,7 +43,7 @@ namespace WriteTests
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
                 });
-                if (status.Result == EndPointStatus.Disconnected)
+                if (status == EndPointStatus.Disconnected)
                 {
                     throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PV");
                 }

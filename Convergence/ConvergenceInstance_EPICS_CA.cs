@@ -132,21 +132,6 @@ namespace Convergence
             return tcs.Task.Result;
         }
 
-        private ValueUpdateNotificationEventArgs GetEventArgs(EventCallbackDelegate callback)
-        {
-            ParameterInfo[] infos = callback.Method.GetParameters();
-
-            IntPtr argsPtr = (IntPtr)infos[0].DefaultValue; // Get actual IntPtr value
-
-            return (ValueUpdateNotificationEventArgs)Marshal.PtrToStructure(argsPtr, typeof(ValueUpdateNotificationEventArgs));
-        }
-
-        private DbRecordRequestType GetDbFieldType(DataTypes type)
-        {
-            Enum.TryParse(type.ToString(), out DbRecordRequestType dbReqtype);
-            return dbReqtype;
-        }
-
         private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, CaWriteCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();

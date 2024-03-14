@@ -4,6 +4,7 @@ using FluentAssertions;
 using Convergence;
 using EPICSSettings = Convergence.IO.EPICS.Settings;
 using EPICSDataTypes = Convergence.IO.EPICS.DbFieldType;
+using EPICSCaReadCallback = Convergence.IO.EPICS.CaEventCallbackDelegate.CaReadCallback;
 using System.Net.NetworkInformation;
 using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
@@ -27,7 +28,7 @@ namespace ReadTests
             
             Int16 data = -1;
             // Read async and await a callback
-            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync(endPointArgs.EndPointID, (value) =>
+            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
                 data = (Int16)epicSettings.DecodeData(value);
             });

@@ -32,7 +32,7 @@ namespace Convergence.Interfaces
         /// <param name="endPointID"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, ReadCallback<T>? callback);
+        public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T? callback);
 
         /// <summary>
         /// Asynchronously writes the value to the EndPointID and returns and acknowledgement in a callback.
@@ -41,6 +41,6 @@ namespace Convergence.Interfaces
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, WriteCallback<T>? callback);
+        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback);
     }
 }
