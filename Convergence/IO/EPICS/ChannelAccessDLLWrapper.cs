@@ -304,7 +304,7 @@ namespace Convergence.IO.EPICS
 
         public unsafe static EcaType ca_array_get(
           this IntPtr pChanID,
-          DbRecordRequestType dbrType,
+          DbFieldType dbrType,
           int nElementsOfThatTypeWanted,
           void* pMemoryAllocatedToHoldDbrStruct
         )
@@ -413,7 +413,7 @@ namespace Convergence.IO.EPICS
 
         public static unsafe EcaType ca_array_put(
           this IntPtr pChanID,
-          DbRecordRequestType dbrType,
+          DbFieldType dbrType,
           int nElements,
           void* pValueToWrite // New channel value is copied from here
         )
@@ -466,7 +466,6 @@ namespace Convergence.IO.EPICS
           CaWriteCallback writeCallback // Event will be raised when successful write is confirmed
         )
         {
-
             // Check that the channel is connected
             if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
             // Check that write access is allowed
@@ -529,15 +528,21 @@ namespace Convergence.IO.EPICS
         // SUBSCRIPTIONS
         // -------------
 
-        public unsafe static IntPtr ca_create_subscription(
+        public unsafe static EcaType ca_create_subscription(
           this IntPtr pChanID,
-          DbRecordRequestType dbrType,
+          DbFieldType dbrType,
           int count,
-          WhichFieldsToMonitor whichFieldsToMonitor,
-          EventCallbackDelegate valueUpdateCallback,
-          int userArg
+          CaMonitorTypes? whichFieldsToMonitor,
+          CaMonitorCallback valueUpdateCallback
         )
         {
+            // Check that the channel is connected
+            if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
+            // Check that read access is allowed
+            if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
+            // assign userArg to ca_puser(pChanID)
+            var userArg = ca_puser(pChanID);
+            whichFieldsToMonitor ??= CaMonitorTypes.MonitorValField;
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_create_subscription(
               (short)dbrType,
               (uint)count,
@@ -545,16 +550,15 @@ namespace Convergence.IO.EPICS
               (uint)whichFieldsToMonitor,
               valueUpdateCallback,
               (System.IntPtr)userArg,
-              out IntPtr pEvid
+              out _
             )).ToString(), out EcaType result))
             {
-                return pEvid;
+                return result;
             }
             else
             {
-                throw new InvalidCastException("ca_create_subscription: Unable to cast EcaType from Int32");
+                return EcaType.ECA_ADDFAIL;
             }
-            return pEvid;
             [DllImport(CA_DLL_NAME)]
             // Register a state change subscription and specify a callback function
             // to be invoked whenever the process variable undergoes significant state changes.
@@ -577,7 +581,7 @@ namespace Convergence.IO.EPICS
               UInt32 count,
               IntPtr pChanID,
               uint mask,
-              EventCallbackDelegate pEventCallBack,
+              CaMonitorCallback pEventCallBack,
               IntPtr userArg,
               out IntPtr pEvid
             );

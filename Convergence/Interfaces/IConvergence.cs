@@ -42,5 +42,15 @@ namespace Convergence.Interfaces
         /// <param name="callback"></param>
         /// <returns></returns>
         public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback);
+
+        /// <summary>
+        /// Asynchronously subscribes to the EndPointID and returns the value in a callback.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endPointID"></param>
+        /// <param name="monitorType"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public Task<EndPointStatus> SubscribeAsycn<T>(EndPointID endPointID, T? monitorType, T? callback);
     }
 }
