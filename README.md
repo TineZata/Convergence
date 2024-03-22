@@ -11,7 +11,7 @@ Common Industrial:
 - PROFINET
 - ZeroMQ
 
-Specific Industrial
+Power and Utility
 - DND3
 - ISO 61850
 
