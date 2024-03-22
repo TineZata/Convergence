@@ -39,18 +39,28 @@ namespace SubscriptionTests
                 throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PV");
             }
             else {
-                Int16 testValue = 1;
-                GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
+                GCHandle handle0 = GCHandle.Alloc(0, GCHandleType.Pinned);
+                GCHandle handle1 = GCHandle.Alloc(1, GCHandleType.Pinned);
                 try
                 {
-                    IntPtr valuePtr = handle.AddrOfPinnedObject();
+                    // Ensure the PV is set to 0
+                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
                     // Do a write to the PV to trigger the subscription
-                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, null);
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, (read1) =>
+                    { 
+                    });
+
+                    // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
+                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, (read2) =>
+                    { });
                 }
                 finally
                 {
-                    if (handle.IsAllocated)
-                        handle.Free();
+                    if (handle0.IsAllocated)
+                        handle0.Free();
+                    if (handle1.IsAllocated)
+                        handle1.Free();
                 }
             }
             status.Should().Be(EndPointStatus.Okay);

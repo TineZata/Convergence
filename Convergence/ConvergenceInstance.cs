@@ -73,7 +73,7 @@ namespace Convergence
         /// <param name="endPointID"></param>
         /// <param name="readCallback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T? readCallback)
+        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T readCallback)
         {
             switch (endPointID.Protocol)
             {
@@ -91,7 +91,7 @@ namespace Convergence
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback)
+        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T callback)
         {
             switch (endPointID.Protocol)
             {
@@ -102,7 +102,16 @@ namespace Convergence
             return EndPointStatus.UnknownError;
         }
 
-        public async Task<EndPointStatus> SubscribeAsync<T1, T2>(EndPointID endPointID, T1? monitorType, T2? callback)
+        /// <summary>
+        /// Ayncronous subscribe method for all protocols.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="endPointID"></param>
+        /// <param name="monitorType"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public async Task<EndPointStatus> SubscribeAsync<T1, T2>(EndPointID endPointID, T1 monitorType, T2 callback)
         {
             switch(endPointID.Protocol)
             {

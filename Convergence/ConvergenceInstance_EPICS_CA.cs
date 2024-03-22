@@ -97,7 +97,13 @@ namespace Convergence
         private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, CaReadCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-
+            // If the callback is null, don't bother trying to read. ca_array_get_callback will return ECA_BADFUNCPTR
+            // Maybe in the future we can think of using normal ca_get() instead of ca_array_get_callback
+            if (callback == null)
+            {
+                tcs.SetResult(EcaType.ECA_BADFUNCPTR);
+                return tcs.Task.Result;
+            }
             if (!_epics_ca_connections!.ContainsKey(endPointID))
             {
                 tcs.SetResult(EcaType.ECA_DISCONN);
@@ -137,7 +143,8 @@ namespace Convergence
         private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, CaWriteCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-            if (pvalue == null || callback == null)
+            // If the pvalue or callback is null, don't bother trying to write. ca_array_put_callback will return ECA_BADFUNCPTR
+            if (pvalue == IntPtr.Zero || callback == null)
             {
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return tcs.Task;
@@ -213,7 +220,8 @@ namespace Convergence
         public Task<EcaType> EpicsCaMonitor(EndPointID endPointID, CaMonitorTypes? monType, CaMonitorCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-            if (monType == null || callback == null)
+            // Monitor should always have a valid callback.
+            if (callback == null)
             {
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return tcs.Task;
@@ -249,13 +257,6 @@ namespace Convergence
                     tcs.SetResult(EcaType.ECA_NORMAL);
                 else
                     tcs.SetResult(result);
-
-                // Must call 'flush' otherwise the message isn't sent to the server
-                // immediately. If we forget to call 'flush', the message *will* eventually
-                // get sent, but not until the default timeout period of 30 secs has elapsed,
-                // in which case the callback handler won't be invoked until that 30 secs has elapsed.
-                // result = EPICSWrapper.ca_flush_io();
-                //tcs.SetResult(result);
             }
             return tcs.Task;
         }
