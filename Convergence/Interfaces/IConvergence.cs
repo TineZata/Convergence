@@ -18,7 +18,7 @@ namespace Convergence.Interfaces
         /// </summary>
         /// <param name="endPointArgs"></param>
         /// <returns>Guid</returns>
-        void Connect<T>(EndPointBase<T> endPointArgs);
+        public Task<EndPointStatus> ConnectAsync<T>(EndPointBase<T> endPointArgs);
 
         /// <summary>
         /// Disconnects the EndPointID from the network.
@@ -32,7 +32,7 @@ namespace Convergence.Interfaces
         /// <param name="endPointID"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T? callback);
+        public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T callback);
 
         /// <summary>
         /// Asynchronously writes the value to the EndPointID and returns and acknowledgement in a callback.
@@ -41,6 +41,16 @@ namespace Convergence.Interfaces
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback);
+        public Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T callback);
+
+        /// <summary>
+        /// Asynchronously subscribes to the EndPointID and returns the value in a callback.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endPointID"></param>
+        /// <param name="monitorType"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public Task<EndPointStatus> SubscribeAsync<T1, T2>(EndPointID endPointID, T1 monitorType, T2 callback);
     }
 }

@@ -46,6 +46,11 @@ namespace Convergence.IO.EPICS
         /// </summary>
         string ? Description { get; set; }
 
+        /// <summary>
+        /// Pointer to the monitor handle.
+        /// </summary>
+        public IntPtr MonitorHandle  = IntPtr.Zero;
+
 
         public Settings(DbFieldType datatype, bool isServer, int elementCount, bool isPVA)
         {

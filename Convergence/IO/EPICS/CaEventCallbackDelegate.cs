@@ -29,6 +29,9 @@ namespace Convergence.IO.EPICS
         public delegate void CaReadCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void CaWriteCallback(EventCallbackArgs data); 
+        public delegate void CaWriteCallback(EventCallbackArgs data);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void CaMonitorCallback(EventCallbackArgs data);
     }
 }

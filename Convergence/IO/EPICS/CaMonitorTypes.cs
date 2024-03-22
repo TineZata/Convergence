@@ -3,7 +3,7 @@
 namespace Conversion.IO.EPICS
 {
     [System.Flags]
-    public enum WhichFieldsToMonitor
+    public enum CaMonitorTypes
     {
         MonitorValField = ChannelAccessConstants.DBE_VALUE,
         MonitorOtherFields = ChannelAccessConstants.DBE_PROPERTY,

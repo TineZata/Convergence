@@ -24,7 +24,7 @@ namespace ReadTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.Connect(endPointArgs);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
             
             Int16 data = -1;
             // Read async and await a callback

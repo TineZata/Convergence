@@ -6,6 +6,8 @@ using System.Reflection;
 using Convergence.IO;
 using static Convergence.IO.EPICS.CaEventCallbackDelegate;
 using System.Threading;
+using Convergence;
+using Conversion.IO.EPICS;
 
 namespace Convergence
 {
@@ -19,7 +21,7 @@ namespace Convergence
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<EcaType> EpicsCaConnect<T>(EndPointBase<T> endPointArgs)
+        public async Task<EcaType> EpicsCaConnectAsync<T>(EndPointBase<T> endPointArgs)
         {
             var tcs = new TaskCompletionSource<EcaType>();
             var endPointID = endPointArgs.EndPointID;
@@ -61,7 +63,7 @@ namespace Convergence
                         tcs.SetResult(EcaType.ECA_NEWCONN); // New or resumed network connection
                     else
                         tcs.SetResult(EcaType.ECA_NORMAL);
-                   return tcs.Task.Result; 
+                    return tcs.Task.Result;
                 }
                 else
                 {
@@ -95,7 +97,13 @@ namespace Convergence
         private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, CaReadCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-
+            // If the callback is null, don't bother trying to read. ca_array_get_callback will return ECA_BADFUNCPTR
+            // Maybe in the future we can think of using normal ca_get() instead of ca_array_get_callback
+            if (callback == null)
+            {
+                tcs.SetResult(EcaType.ECA_BADFUNCPTR);
+                return tcs.Task.Result;
+            }
             if (!_epics_ca_connections!.ContainsKey(endPointID))
             {
                 tcs.SetResult(EcaType.ECA_DISCONN);
@@ -107,7 +115,7 @@ namespace Convergence
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return tcs.Task.Result;
             }
-            
+
             var getResult = EPICSWrapper.ca_array_get_callback(
             pChanID: epicsSettings.ChannelHandle,
             type: epicsSettings.DataType,
@@ -121,21 +129,22 @@ namespace Convergence
                 tcs.SetResult(getResult);
                 return tcs.Task.Result;
             }
-            
+
             // Must call 'flush' otherwise the message isn't sent to the server
             // immediately. If we forget to call 'flush', the message *will* eventually
             // get sent, but not until the default timeout period of 30 secs has elapsed,
             // in which case the callback handler won't be invoked until that 30 secs has elapsed.
             var result = EPICSWrapper.ca_flush_io();
             tcs.SetResult(result);
-            
+
             return tcs.Task.Result;
         }
 
         private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, CaWriteCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-            if (pvalue == null || callback == null)
+            // If the pvalue or callback is null, don't bother trying to write. ca_array_put_callback will return ECA_BADFUNCPTR
+            if (pvalue == IntPtr.Zero || callback == null)
             {
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return tcs.Task;
@@ -145,7 +154,7 @@ namespace Convergence
                 tcs.SetResult(EcaType.ECA_DISCONN);
                 return tcs.Task;
             }
-            else 
+            else
             {
                 var epicsSettings = _epics_ca_connections[endPointID];
                 if (epicsSettings.ChannelHandle == IntPtr.Zero)
@@ -173,5 +182,84 @@ namespace Convergence
                 return tcs.Task;
             }
         }
+
+        EndPointStatus GetEPICSEndPointStatus(EcaType eps)
+        {
+            EndPointStatus status = EndPointStatus.UnknownError;
+            switch (eps)
+            {
+                case EcaType.ECA_NORMAL:
+                    status = EndPointStatus.Okay;
+                    break;
+                case EcaType.ECA_BADTYPE:
+                    status = EndPointStatus.InvalidDataType;
+                    break;
+                case EcaType.ECA_NORDACCESS:
+                    status = EndPointStatus.NoReadAccess;
+                    break;
+                case EcaType.ECA_DISCONN:
+                    status = EndPointStatus.Disconnected;
+                    break;
+                case EcaType.ECA_UNAVAILINSERV:
+                    status = EndPointStatus.Disconnected;
+                    break;
+                case EcaType.ECA_TIMEOUT:
+                    status = EndPointStatus.TimedOut;
+                    break;
+                case EcaType.ECA_BADCOUNT:
+                case EcaType.ECA_ALLOCMEM:
+                case EcaType.ECA_TOLARGE:
+                case EcaType.ECA_GETFAIL:
+                default:
+                    status = EndPointStatus.UnknownError;
+                    break;
+            }
+            return status;
+        }
+
+        public Task<EcaType> EpicsCaMonitor(EndPointID endPointID, CaMonitorTypes? monType, CaMonitorCallback? callback)
+        {
+            var tcs = new TaskCompletionSource<EcaType>();
+            // Monitor should always have a valid callback.
+            if (callback == null)
+            {
+                tcs.SetResult(EcaType.ECA_BADFUNCPTR);
+                return tcs.Task;
+            }
+            if (!_epics_ca_connections!.ContainsKey(endPointID))
+            {
+                tcs.SetResult(EcaType.ECA_DISCONN);
+                return tcs.Task;
+            }
+            else
+            {
+                var epicsSettings = _epics_ca_connections[endPointID];
+                if (epicsSettings.ChannelHandle == IntPtr.Zero)
+                {
+                    tcs.SetResult(EcaType.ECA_BADFUNCPTR);
+                    return tcs.Task;
+                }
+                var result = EPICSWrapper.ca_create_subscription(
+                                pChanID: epicsSettings.ChannelHandle,
+                                dbrType: epicsSettings.DataType,
+                                count: epicsSettings.ElementCount,
+                                whichFieldsToMonitor: monType,
+                                valueUpdateCallback: callback,
+                                out epicsSettings.MonitorHandle);
+                if (result != EcaType.ECA_NORMAL)
+                {
+                    tcs.SetResult(result);
+                    return tcs.Task;
+                }
+                // Do the pend event to block until the callback is invoked.
+                result = EPICSWrapper.ca_pend_event(_epics_timeout);
+                if (result == EcaType.ECA_TIMEOUT) // ca_pend_event() returns ECA_TIMEOUT if successful.
+                    tcs.SetResult(EcaType.ECA_NORMAL);
+                else
+                    tcs.SetResult(result);
+            }
+            return tcs.Task;
+        }
     }
 }
+
