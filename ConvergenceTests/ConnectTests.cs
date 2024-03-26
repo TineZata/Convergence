@@ -12,7 +12,7 @@ namespace ConnectTests
         [Test]
         public void EPICS_CA_Connect_returns_valid_ID()
         {
-            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PV");
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
                 datatype: EPICSDataTypes.DBF_SHORT_i16, 
                 elementCount: 1, 
@@ -26,7 +26,7 @@ namespace ConnectTests
         [Test]
         public void EPICS_CA_Connect_twice_returns_same_GUID()
         {
-            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PV");
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
                 datatype: EPICSDataTypes.DBF_SHORT_i16,
                 elementCount: 1,
@@ -36,7 +36,7 @@ namespace ConnectTests
             ConvergenceInstance.Hub.ConnectAsync(endPointArgs1);
             endPointArgs1.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
             // Creating a new EPICSSettings with the same EndPointID should return a the same Guid.
-            var endPointId2 = new EndPointID(Protocols.EPICS_CA, "Test:PV");
+            var endPointId2 = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings2 = new EPICSSettings(
                                 datatype: EPICSDataTypes.DBF_SHORT_i16,
                                 elementCount: 1,
@@ -48,22 +48,19 @@ namespace ConnectTests
             endPointArgs2.EndPointID.UniqueId.Should().NotBe(endPointArgs1.EndPointID.UniqueId);
         }
 
-        // Test for ConvergenceLib.IO.EPICS.Settings is set correctlty for EPICS PV Access, a valid Guid is returned.
-        //[Test]
-        //public void EPICS_PVA_Connect_returns_valid_ID()
-        //{
-        //    var endPointId = new EndPointID(Protocols.EPICS_PVA, new Guid(), "Test:PVA");
-        //    var settings = new EPICSSettings(
-        //        datatype: EPICSDataTypes.PVA_int8, 
-        //        elementCount: 1, 
-        //        isServer: false, 
-        //        isPVA: false);
-        //    var endPointArgs = new EndPointBase<EPICSSettings> { Settings = settings };
-        //    EndPointID result = ConvergenceInstance.Hub.Connect(endPointArgs);
-        //    result.UniqueId.Should().NotBe(Guid.Empty);
-        //    // Calling Connect again with the same EndPointID should return the same Guid.
-        //    EndPointID result2 = ConvergenceInstance.Hub.Connect(endPointArgs);
-        //    result2.UniqueId.Should().Be(result.UniqueId);
-        //}
+        // Create a test for connecting to an integer PV with EPICS_CA
+        [Test]
+        public void EPICS_CA_Connect_to_integer_PV()
+        {
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVInteger");
+            var epicSettings = new EPICSSettings(
+                               datatype: EPICSDataTypes.DBF_LONG_i32,
+                                elementCount: 1,
+                                isServer: false,
+                                isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
+        }
     }
 }

@@ -72,6 +72,7 @@ namespace Convergence.IO.EPICS
             Enum.TryParse<DbFieldType>(args.type.ToString(), out var type);
             switch(type)
             {
+                // Decode data for and BDF_SHORT_i16
                 case DbFieldType.DBF_SHORT_i16:
                     Int16[] shortArray = new Int16[args.count];
                     Marshal.Copy(args.dbr, shortArray, 0, args.count);
@@ -82,6 +83,19 @@ namespace Convergence.IO.EPICS
                     else
                     {
                         data = shortArray;
+                    }
+                    return data;
+                // Decode data for and DBF_LONG_i32
+                case DbFieldType.DBF_LONG_i32:
+                    Int32[] longArray = new Int32[args.count];
+                    Marshal.Copy(args.dbr, longArray, 0, args.count);
+                    if (longArray.Length == 1)
+                    {
+                        data = longArray[0];
+                    }
+                    else
+                    {
+                        data = longArray;
                     }
                     return data;
             }

@@ -1,0 +1,15 @@
+record(bi, "Test:PVBoolean") {
+    field(VAL, "1")
+    field(ZNAM, "0")
+    field(ONAM, "1")
+    field(PINI, "YES")
+}
+
+record(longin, "Test:PVInteger") {
+    field(DESC, "description")
+    field(LOPR, "-100")
+    field(HOPR, "100")
+    field(EGU,  "Volts")
+    field(PINI,  "YES")
+    field(VAL, "-5")
+}
