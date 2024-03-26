@@ -78,27 +78,27 @@ namespace Convergence
         /// </summary>
         /// <param name="endPointID"></param>
         /// <exception cref="NotImplementedException"></exception>
-        private void EpicsCaDisconnect(EndPointID endPointID)
+        private EcaType EpicsCaDisconnect(EndPointID endPointID)
         {
+            EcaType result = EcaType.ECA_NOSUPPORT;
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
-                switch (EPICSWrapper.ca_clear_channel(_epics_ca_connections[endPointID].ChannelHandle))
+                result = EPICSWrapper.ca_clear_channel(_epics_ca_connections[endPointID].ChannelHandle);
+                switch (result)
                 {
                     case EcaType.ECA_NORMAL:
                         _epics_ca_connections.TryRemove(endPointID, out _);
                         break;
-                    case EcaType.ECA_BADCHID:
-                        throw new ArgumentException("Corrupted ChannelID");
-                        break;
                 }
             }
+            return result;
         }
 
         private async Task<EcaType> EpicsCaReadAsync(EndPointID endPointID, CaReadCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
             // If the callback is null, don't bother trying to read. ca_array_get_callback will return ECA_BADFUNCPTR
-            // Maybe in the future we can think of using normal ca_get() instead of ca_array_get_callback
+            // Read must have a valid callback to be able to access the read data.
             if (callback == null)
             {
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
@@ -143,8 +143,8 @@ namespace Convergence
         private Task<EcaType> EpicsCaWriteAsync(EndPointID endPointID, IntPtr pvalue, CaWriteCallback? callback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-            // If the pvalue or callback is null, don't bother trying to write. ca_array_put_callback will return ECA_BADFUNCPTR
-            if (pvalue == IntPtr.Zero || callback == null)
+            // If the pvalue, don't bother trying to write.
+            if (pvalue == IntPtr.Zero)
             {
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return tcs.Task;
@@ -162,7 +162,15 @@ namespace Convergence
                     tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                     return tcs.Task;
                 }
-                var result = EPICSWrapper.ca_array_put_callback(
+                EcaType result = EcaType.ECA_NOSUPPORT;
+                if (callback == null)
+                    result = EPICSWrapper.ca_array_put(
+                                pChanID: epicsSettings.ChannelHandle,
+                                dbrType: epicsSettings.DataType,
+                                nElements: epicsSettings.ElementCount,
+                                pValueToWrite: pvalue);
+                else
+                    result = EPICSWrapper.ca_array_put_callback(
                                 pChanID: epicsSettings.ChannelHandle,
                                 dbrType: epicsSettings.DataType,
                                 nElements: epicsSettings.ElementCount,

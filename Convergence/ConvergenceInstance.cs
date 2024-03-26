@@ -57,14 +57,16 @@ namespace Convergence
         /// Disconnects the EndPointID from the network.
         /// </summary>
         /// <param name="endPointID"></param>
-        public void Disconnect(EndPointID endPointID)
+        public bool Disconnect(EndPointID endPointID)
         {
+            bool disconnected = false;
             switch (endPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    EpicsCaDisconnect(endPointID);
+                    disconnected = (EpicsCaDisconnect(endPointID) == EcaType.ECA_NORMAL);
                     break;
             }
+            return disconnected;
         }
 
         /// <summary>
@@ -73,7 +75,7 @@ namespace Convergence
         /// <param name="endPointID"></param>
         /// <param name="readCallback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T readCallback)
+        public async Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T? readCallback)
         {
             switch (endPointID.Protocol)
             {
@@ -91,7 +93,7 @@ namespace Convergence
         /// <param name="value"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T callback)
+        public async Task<EndPointStatus> WriteAsync<T>(EndPointID endPointID, IntPtr value, T? callback)
         {
             switch (endPointID.Protocol)
             {
