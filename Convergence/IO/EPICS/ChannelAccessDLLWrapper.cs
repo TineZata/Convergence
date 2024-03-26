@@ -306,7 +306,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbFieldType dbrType,
           int nElementsOfThatTypeWanted,
-          void* pMemoryAllocatedToHoldDbrStruct
+          IntPtr pMemoryAllocatedToHoldDbrStruct
         )
         {
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_get(
@@ -415,7 +415,7 @@ namespace Convergence.IO.EPICS
           this IntPtr pChanID,
           DbFieldType dbrType,
           int nElements,
-          void* pValueToWrite // New channel value is copied from here
+          IntPtr pValueToWrite // New channel value is copied from here
         )
         {
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put(

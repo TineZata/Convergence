@@ -25,7 +25,8 @@ namespace DisconnectTests
             ConvergenceInstance.Hub.ConnectAsync(endPointArgs1);
             endPointArgs1.EndPointID.UniqueId .Should().NotBe(Guid.Empty);
             // Calling Disconnect should remove the EndPointID from the Hub.
-            ConvergenceInstance.Hub.Disconnect(endPointArgs1.EndPointID);
+            var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs1.EndPointID);
+            isDiscon.Should().BeTrue();
             // Creating a new EPICSSettings with the same EndPointID should return a different Guid.
             var endPointId2 = new EndPointID(Protocols.EPICS_CA, "Test:PV");
             var epicSettings2 = new EPICSSettings(

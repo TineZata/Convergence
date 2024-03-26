@@ -46,14 +46,11 @@ namespace SubscriptionTests
                     // Ensure the PV is set to 0
                     IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
                     // Do a write to the PV to trigger the subscription
-                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, (read1) =>
-                    { 
-                    });
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
 
                     // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
                     IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
-                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, (read2) =>
-                    { });
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
                 }
                 finally
                 {

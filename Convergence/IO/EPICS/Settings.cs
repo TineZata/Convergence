@@ -51,6 +51,11 @@ namespace Convergence.IO.EPICS
         /// </summary>
         public IntPtr MonitorHandle  = IntPtr.Zero;
 
+        /// <summary>
+        /// Pointer to the write handle.
+        /// 
+        public IntPtr WriteHandle = IntPtr.Zero;
+
 
         public Settings(DbFieldType datatype, bool isServer, int elementCount, bool isPVA)
         {
