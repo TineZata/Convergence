@@ -98,6 +98,19 @@ namespace Convergence.IO.EPICS
                         data = longArray;
                     }
                     return data;
+                // Decode data for and DBF_FLOAT_f32
+                case DbFieldType.DBF_FLOAT_f32:
+                    float[] floatArray = new float[args.count];
+                    Marshal.Copy(args.dbr, floatArray, 0, args.count);
+                    if (floatArray.Length == 1)
+                    {
+                        data = floatArray[0];
+                    }
+                    else
+                    {
+                        data = floatArray;
+                    }
+                    return data;
             }
             return data;
         }
