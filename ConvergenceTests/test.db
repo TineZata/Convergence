@@ -6,10 +6,17 @@ record(bi, "Test:PVBoolean") {
 }
 
 record(longin, "Test:PVInteger") {
-    field(DESC, "description")
     field(LOPR, "-100")
     field(HOPR, "100")
     field(EGU,  "Volts")
     field(PINI,  "YES")
     field(VAL, "-5")
+}
+
+record(ai, "Test:PVFloat") {
+    field(LOPR, "-100.5")
+    field(HOPR, "100.5")
+    field(EGU,  "mm")
+    field(PINI,  "YES")
+    field(VAL, "-5.5")
 }

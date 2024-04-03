@@ -119,5 +119,57 @@ namespace SubscriptionTests
             }
             status.Should().Be(EndPointStatus.Okay);
         }
+
+        // Create a test for subscribing to a float Test:PVFloat
+        [Test]
+        public async Task EPICS_CA_Subscribe_to_float_PV()
+        {
+            // Create a new connections and then attempt to read the value.
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVFloat");
+            var epicSettings = new EPICSSettings(
+                                datatype: EPICSDataTypes.DBF_FLOAT_f32,
+                                elementCount: 1,
+                                isServer: false,
+                                isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            
+            float data = -5.0f;
+            // Set up a subscription and await a callback
+            EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
+            {
+                data = (float)epicSettings.DecodeData(value);
+            });
+            if (status == EndPointStatus.Disconnected)
+            {
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVFloat");
+            }
+            else
+            {
+                GCHandle handle0 = GCHandle.Alloc(15.0f, GCHandleType.Pinned);
+                GCHandle handle1 = GCHandle.Alloc(-5.5f, GCHandleType.Pinned);
+                try
+                {
+                    // Ensure the PV is set to 0
+                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
+                    // Do a write to the PV to trigger the subscription
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
+                    Task.Delay(100).Wait();
+                    data.Should().Be(15.0f);
+                    // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
+                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
+                    Task.Delay(100).Wait();
+                    data.Should().Be(-5.5f);
+                }
+                finally
+                {
+                    if (handle0.IsAllocated)
+                        handle0.Free();
+                    if (handle1.IsAllocated)
+                        handle1.Free();
+                }
+            }
+        }
     }
 }

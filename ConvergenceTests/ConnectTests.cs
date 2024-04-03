@@ -62,5 +62,20 @@ namespace ConnectTests
             ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
+
+        // Create a test for connecting to a float Test:PVFloat
+        [Test]
+        public void EPICS_CA_Connect_to_float_PV()
+        {
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVFloat");
+            var epicSettings = new EPICSSettings(
+                                datatype: EPICSDataTypes.DBF_FLOAT_f32,
+                                elementCount: 1,
+                                isServer: false,
+                                isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
+        }
     }
 }
