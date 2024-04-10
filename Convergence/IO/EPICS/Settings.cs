@@ -111,6 +111,19 @@ namespace Convergence.IO.EPICS
                         data = floatArray;
                     }
                     return data;
+                // Decode data for and DBF_DOUBLE_f64 which take data from an two array items of 32 bits.
+                case DbFieldType.DBF_DOUBLE_f64:
+                    double[] doubleArray = new double[args.count];
+                    Marshal.Copy(args.dbr, doubleArray, 0, args.count);
+                    if (doubleArray.Length == 1)
+                    {
+                        data = doubleArray[0];
+                    }
+                    else
+                    {
+                        data = doubleArray;
+                    }
+                    return data;
             }
             return data;
         }
