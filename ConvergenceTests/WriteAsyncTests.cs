@@ -141,5 +141,48 @@ namespace WriteTests
                     handle.Free();
             }
         }
+
+        // Create a test for writing to a double Test:PVDouble
+        [Test]
+        public async Task EPICS_CA_WriteAsync_to_double_PV()
+        {
+            // Create a new connections and then attempt to write the value.
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
+            var epicSettings = new EPICSSettings(
+                                datatype: EPICSDataTypes.DBF_DOUBLE_f64,
+                                elementCount: 1,
+                                isServer: false,
+                                isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+
+            double testValue = double.MaxValue;
+            GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
+            try
+            {
+                IntPtr valuePtr = handle.AddrOfPinnedObject();
+                // Write async and await a callback
+                EndPointStatus status = await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
+                {
+                    // Read the value back to verify the write
+                    var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+                    {
+                        var data = (double)epicSettings.DecodeData(value);
+                        data.Should().Be(double.MaxValue);
+                    });
+                    readStatus.Result.Should().Be(EndPointStatus.Okay);
+                });
+                if (status == EndPointStatus.Disconnected)
+                {
+                    throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVDouble");
+                }
+                status.Should().Be(EndPointStatus.Okay);
+            }
+            finally
+            {
+                if (handle.IsAllocated)
+                    handle.Free();
+            }
+        }
     }
 }

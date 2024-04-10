@@ -20,3 +20,9 @@ record(ai, "Test:PVFloat") {
     field(PINI,  "YES")
     field(VAL, "-5.5")
 }
+
+record(ai, "Test:PVDouble") {
+    field(VAL,  "-1.7976931348623157E308")
+    field(PREC, "16")
+    field(PINI, "YES")
+}

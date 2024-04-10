@@ -95,5 +95,33 @@ namespace ReadTests
             status.Should().Be(EndPointStatus.Okay);
             data.Should().Be(-5.5f);
         }
+
+        // Create a test for reading from a double Test:PVDouble
+        [Test]
+        public async Task EPICS_CA_ReadAsync_from_double_PV()
+        {
+            // Create a new connections and then attempt to read the value.
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
+            var epicSettings = new EPICSSettings(
+                                    datatype: EPICSDataTypes.DBF_DOUBLE_f64,
+                                    elementCount: 1,
+                                    isServer: false,
+                                    isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            
+            double data = -6.1;
+            // Read async and await a callback
+            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+            {
+                data = (double)epicSettings.DecodeData(value);
+            });
+            if (status == EndPointStatus.Disconnected)
+            {
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVDouble");
+            }
+            status.Should().Be(EndPointStatus.Okay);
+            data.Should().Be(double.MinValue);
+        }
     }
 }

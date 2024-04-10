@@ -171,5 +171,57 @@ namespace SubscriptionTests
                 }
             }
         }
+
+        // Create a test for subscribing to a double Test:PVDouble
+        [Test]
+        public async Task EPICS_CA_Subscribe_to_double_PV()
+        {
+            // Create a new connections and then attempt to read the value.
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
+            var epicSettings = new EPICSSettings(
+                                    datatype: EPICSDataTypes.DBF_DOUBLE_f64,
+                                    elementCount: 1,
+                                    isServer: false,
+                                    isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            
+            double data = -5.0;
+            // Set up a subscription and await a callback
+            EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
+            {
+                data = (double)epicSettings.DecodeData(value);
+            });
+            if (status == EndPointStatus.Disconnected)
+            {
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVDouble");
+            }
+            else
+            {
+                GCHandle handle0 = GCHandle.Alloc(double.MaxValue, GCHandleType.Pinned);
+                GCHandle handle1 = GCHandle.Alloc(double.MinValue, GCHandleType.Pinned);
+                try
+                {
+                    // Ensure the PV is set to 0
+                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
+                    // Do a write to the PV to trigger the subscription
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
+                    Task.Delay(100).Wait();
+                    data.Should().Be(double.MaxValue);
+                    // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
+                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
+                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
+                    Task.Delay(100).Wait();
+                    data.Should().Be(double.MinValue);
+                }
+                finally
+                {
+                    if (handle0.IsAllocated)
+                        handle0.Free();
+                    if (handle1.IsAllocated)
+                        handle1.Free();
+                }
+            }
+        }
     }
 }

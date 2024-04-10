@@ -74,5 +74,23 @@ namespace DisconnectTests
             var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs.EndPointID);
             isDiscon.Should().BeTrue();
         }
+
+        // Create a test for disconnecting from an Test:PVDouble
+        [Test]
+        public void EPICS_CA_Disconnect_from_double_PV()
+        {
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
+            var epicSettings = new EPICSSettings(
+                                    datatype: EPICSDataTypes.DBF_DOUBLE_f64,
+                                    elementCount: 1,
+                                    isServer: false,
+                                    isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
+            // Calling Disconnect should remove the EndPointID from the Hub.
+            var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs.EndPointID);
+            isDiscon.Should().BeTrue();
+        }
     }
 }
