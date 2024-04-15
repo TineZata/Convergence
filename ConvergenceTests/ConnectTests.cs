@@ -19,7 +19,8 @@ namespace ConnectTests
                 isServer: false, 
                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            EndPointStatus result = ConvergenceInstance.Hub.ConnectAsync(endPointArgs).Result;
+            result.Should().NotBe(EndPointStatus.Disconnected);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 
@@ -85,6 +86,21 @@ namespace ConnectTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
             var epicSettings = new EPICSSettings(
                                 datatype: EPICSDataTypes.DBF_DOUBLE_f64,
+                                elementCount: 1,
+                                isServer: false,
+                                isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
+        }
+
+        // Create a test for connecting to a string Test:PVString
+        [Test]
+        public void EPICS_CA_Connect_to_string_PV()
+        {
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
+            var epicSettings = new EPICSSettings(
+                                datatype: EPICSDataTypes.DBF_STRING_s39,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);

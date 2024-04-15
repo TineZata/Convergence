@@ -1,5 +1,4 @@
 ﻿using EPICSWrapper = Convergence.IO.EPICS.ChannelAccessDLLWrapper;
-using EPICSCallBack = Convergence.IO.ConnectionCallback;
 using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
 using System.Reflection;
@@ -42,7 +41,19 @@ namespace Convergence
                     return tcs.Task.Result;
                 }
 
-                var chCreateResult = EPICSWrapper.ca_create_channel(endPointArgs.EndPointID.EndPointName ?? "", null, out epicsSettings.ChannelHandle);
+                //var chCreateResult = EPICSWrapper.ca_create_channel(endPointArgs.EndPointID.EndPointName ?? "", null, out epicsSettings.ChannelHandle);
+                // Do connection with a connection callback.
+                EcaType chCreateResult = EcaType.ECA_DISCONN;
+                chCreateResult = EPICSWrapper.ca_create_channel(
+                                       endPointArgs.EndPointID.EndPointName ?? "",
+                                        connectionCallback: (value) =>
+                                        {
+                                            if (value.connectionState == ConnectionStatusChangedEventArgs.CA_OP_CONN_DOWN)
+                                                chCreateResult = EcaType.ECA_DISCONN;
+                                            else
+                                                chCreateResult = EcaType.ECA_NORMAL;
+                                        },
+                                        out epicsSettings.ChannelHandle);
                 if (chCreateResult != EcaType.ECA_NORMAL)
                 {
                     tcs.SetResult(chCreateResult);

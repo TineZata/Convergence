@@ -19,7 +19,7 @@ namespace Convergence.IO.EPICS
 
   [StructLayout(LayoutKind.Sequential)]
   [ApiWrapper.OriginalStructType(typeof(StructsAsDefinedInC.connection_handler_args))]
-  internal readonly struct ConnectionStatusChangedEventArgs 
+  public readonly struct ConnectionStatusChangedEventArgs 
   {
     public const int CA_OP_CONN_UP   = 6 ;
     public const int CA_OP_CONN_DOWN = 7 ;
@@ -51,7 +51,7 @@ namespace Convergence.IO.EPICS
 
   [StructLayout(LayoutKind.Sequential)]
   [ApiWrapper.OriginalStructType(typeof(StructsAsDefinedInC.exception_handler_args))]
-  internal readonly struct ExceptionHandlerEventArgs 
+  public readonly struct ExceptionHandlerEventArgs 
   {
     public readonly IntPtr usr    ; // User argument supplied when installed
     public readonly IntPtr chid   ; // Channel id (may be NULL)

@@ -26,3 +26,8 @@ record(ai, "Test:PVDouble") {
     field(PREC, "16")
     field(PINI, "YES")
 }
+
+record(stringin, "Test:PVString") {
+    field(PINI, "YES")
+    field(VAL,"I'm a string.")
+}

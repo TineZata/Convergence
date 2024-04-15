@@ -124,6 +124,23 @@ namespace Convergence.IO.EPICS
                         data = doubleArray;
                     }
                     return data;
+
+                // Decode data for and DBF_STRING
+                case DbFieldType.DBF_STRING_s39:
+                    string[] stringArray = new string[args.count];
+                    for (int i = 0; i < args.count; i++)
+                    {
+                        stringArray[i] = Marshal.PtrToStringAnsi(Marshal.ReadIntPtr(args.dbr, i * IntPtr.Size));
+                    }
+                    if (stringArray.Length == 1)
+                    {
+                        data = stringArray[0];
+                    }
+                    else
+                    {
+                        data = stringArray;
+                    }
+                    return data;
             }
             return data;
         }

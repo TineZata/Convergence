@@ -825,34 +825,6 @@ namespace Convergence.IO.EPICS
             );
         }
 
-        public static EcaType ca_replace_printf_handler(PrintfCallback printfCallback)
-        {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_replace_printf_handler(printfCallback)).ToString(), out EcaType result))
-            {
-                return result;
-            }
-            else
-            {
-                throw new InvalidCastException("ca_replace_printf_handler: Unable to cast EcaType from Int32");
-            }
-            // Replace the 'printf' handler ... ???
-            // This is problematic because 'ca_printf_func' 
-            // needs to be a pointer to a function with a 'va_list' parameter :
-            //   typedef int caPrintfFunc ( const char * pformat, va_list args ) ;
-            // https://github.com/dotnet/runtime/issues/9316
-            // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_replace_printf_handler
-            // Our callback sets up 'pVPrintfFunc' which gets invoked
-            // when 'varArgsPrintFormated' and 'printFormated' are called.
-            // BUT there are also many calls to '::printf'.
-            // The annoying 'change may be required in your path' message
-            // comes from a printf in 'osdProcess.c', line 96.
-            // Hmm, maybe safest to find a way of intercepting stdout/stderr calls ?
-            [DllImport(CA_DLL_NAME)]
-            static extern Int32 ca_replace_printf_handler(
-              PrintfCallback ca_printf_func
-            );
-        }
-
         public static string ca_version()
         {
             return Marshal.PtrToStringAnsi(
