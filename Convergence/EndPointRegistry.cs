@@ -27,14 +27,7 @@ namespace Convergence
         /// </summary>
         public static EndPointRegistry Instance
         {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new EndPointRegistry();
-                }
-                return _instance;
-            }
+          get => _instance ??= new EndPointRegistry();
         }
         // Private constructor for singleton, to prevent external instantiation.
         private EndPointRegistry()
