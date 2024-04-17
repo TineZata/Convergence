@@ -35,7 +35,7 @@ namespace Convergence.IO.EPICS
         public delegate void CaMonitorCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void ConnectionCallback(ConnectionStatusChangedEventArgs args);
+        public delegate void CaConnectCallback(ConnectionStatusChangedEventArgs args);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void ExceptionHandlerCallback(ExceptionHandlerEventArgs args);

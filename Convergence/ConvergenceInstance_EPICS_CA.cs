@@ -20,19 +20,18 @@ namespace Convergence
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<EcaType> EpicsCaConnectAsync<T>(EndPointBase<T> endPointArgs)
+        public async Task<EcaType> EpicsCaConnectAsync(EndPointID endPointID, IntPtr channelHandle, CaConnectCallback? connectCallback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-            var endPointID = endPointArgs.EndPointID;
             // Check if the CA ID already exists.
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
+                channelHandle = _epics_ca_connections[endPointID].ChannelHandle;
                 tcs.SetResult(EcaType.ECA_NORMAL);
                 return tcs.Task.Result;
             }
             else
             {
-                var epicsSettings = endPointArgs.ConvertToEPICSSettings();
                 // Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
                 var contextResult = EPICSWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
                 if (contextResult != EcaType.ECA_NORMAL)
@@ -46,14 +45,8 @@ namespace Convergence
                 EcaType chCreateResult = EcaType.ECA_DISCONN;
                 chCreateResult = EPICSWrapper.ca_create_channel(
                                        endPointArgs.EndPointID.EndPointName ?? "",
-                                        connectionCallback: (value) =>
-                                        {
-                                            if (value.connectionState == ConnectionStatusChangedEventArgs.CA_OP_CONN_DOWN)
-                                                chCreateResult = EcaType.ECA_DISCONN;
-                                            else
-                                                chCreateResult = EcaType.ECA_NORMAL;
-                                        },
-                                        out epicsSettings.ChannelHandle);
+                                        connectionCallback: connectCallback,
+                                        out channelHandle);
                 if (chCreateResult != EcaType.ECA_NORMAL)
                 {
                     tcs.SetResult(chCreateResult);

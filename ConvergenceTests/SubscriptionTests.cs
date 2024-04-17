@@ -32,7 +32,7 @@ namespace SubscriptionTests
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (Int16)epicSettings.DecodeData(value);
+                data = (Int16)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -85,7 +85,7 @@ namespace SubscriptionTests
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (Int32)epicSettings.DecodeData(value);
+                data = (Int32)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -138,7 +138,7 @@ namespace SubscriptionTests
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (float)epicSettings.DecodeData(value);
+                data = (float)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -190,7 +190,7 @@ namespace SubscriptionTests
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (double)epicSettings.DecodeData(value);
+                data = (double)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -242,7 +242,7 @@ namespace SubscriptionTests
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (string)epicSettings.DecodeData(value);
+                data = (string)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {

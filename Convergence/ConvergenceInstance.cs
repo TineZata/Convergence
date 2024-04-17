@@ -35,13 +35,18 @@ namespace Convergence
         /// <typeparam name="T"></typeparam>
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ConnectAsync<T>(EndPointBase<T> endPointArgs)
+        public async Task<EndPointStatus> ConnectAsync<T1,T2>(EndPointBase<T1> endPointArgs, T2? connectCallback)
         {
             switch (endPointArgs.EndPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var result = await EpicsCaConnectAsync(endPointArgs);
-                    return GetEPICSEndPointStatus(result);
+                    if (endPointArgs is EndPointBase<Convergence.IO.EPICS.Settings>)
+                    {
+                        var settings = endPointArgs.Settings as Convergence.IO.EPICS.Settings;
+                        var result = await EpicsCaConnectAsync(endPointArgs.EndPointID, settings!.ChannelHandle, connectCallback as CaConnectCallback);
+                        return GetEPICSEndPointStatus(result);
+                    }
+                    break;
             }
             return EndPointStatus.UnknownError;
         }
@@ -116,7 +121,5 @@ namespace Convergence
             }
             return EndPointStatus.UnknownError;
         }
-
-        
     }
 }

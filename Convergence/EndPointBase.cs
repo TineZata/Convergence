@@ -10,19 +10,5 @@ namespace Convergence
     {
         public TSettings Settings { get; set; }
         public EndPointID EndPointID { get; set; }
-
-        // TODO: This mothod doesnt makes sense, it should be removed.
-        public global::Convergence.IO.EPICS.Settings ConvertToEPICSSettings()
-        {
-            if (Settings is global::Convergence.IO.EPICS.Settings epicsSettings)
-            {
-                return epicsSettings;
-            }
-            else
-            {
-                // Handle other types or throw an exception
-                throw new InvalidOperationException("Unsupported T type");
-            }
-        }
     }
 }

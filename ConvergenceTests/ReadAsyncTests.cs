@@ -30,7 +30,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (Int16)epicSettings.DecodeData(value);
+                data = (Int16)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -58,7 +58,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (Int32)epicSettings.DecodeData(value);
+                data = (Int32)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -86,7 +86,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (float)epicSettings.DecodeData(value);
+                data = (float)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -114,7 +114,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (double)epicSettings.DecodeData(value);
+                data = (double)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -142,7 +142,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (string)epicSettings.DecodeData(value);
+                data = (string)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {

@@ -17,8 +17,9 @@ namespace Convergence.Interfaces
         /// If a connection already exists, the Guid for the concerned connection is returned otherwise a new
         /// </summary>
         /// <param name="endPointArgs"></param>
+        /// <param name="connectCallback"></param>
         /// <returns>Guid</returns>
-        public Task<EndPointStatus> ConnectAsync<T>(EndPointBase<T> endPointArgs);
+        public Task<EndPointStatus> ConnectAsync<T1, T2>(EndPointBase<T1> endPointArgs, T2? connectCallback);
 
         /// <summary>
         /// Disconnects the EndPointID from the network.

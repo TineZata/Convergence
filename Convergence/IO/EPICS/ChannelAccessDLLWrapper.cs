@@ -206,7 +206,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_create_channel(
           string channelName,
-          ConnectionCallback? connectionCallback,
+          CaConnectCallback? connectionCallback,
           out IntPtr pChannel
         )
         {
@@ -243,7 +243,7 @@ namespace Convergence.IO.EPICS
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_create_channel
             static extern Int32 ca_create_channel(
               string pChanName,
-              ConnectionCallback? pConnStateCallback,
+              CaConnectCallback? pConnStateCallback,
               IntPtr pUserPrivate, // can be fetched later by ca_puser() ; passed in 'ConnectCallback'
               UInt32 priority,     // priority level in the server 0 - 100 // put in SETTINGS ???
               out IntPtr pChannel // was 'ref'
