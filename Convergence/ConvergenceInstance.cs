@@ -24,14 +24,7 @@ namespace Convergence
         /// </summary>
         public static ConvergenceInstance Hub
         {
-            get
-            {
-                if (_hub == null)
-                {
-                    _hub = new ConvergenceInstance();
-                }
-                return _hub;
-            }
+          get => _hub ??= new ConvergenceInstance();
         }
         // Private constructor for singleton, to prevent external instantiation.
         private ConvergenceInstance() { }
