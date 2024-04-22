@@ -20,13 +20,13 @@ namespace Convergence
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<EcaType> EpicsCaConnectAsync(EndPointID endPointID, IntPtr channelHandle, CaConnectCallback? connectCallback)
+        public async Task<EcaType> EpicsCaConnectAsync(EndPointID endPointID, Settings inSettings, CaConnectCallback? connectCallback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
             // Check if the CA ID already exists.
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
-                channelHandle = _epics_ca_connections[endPointID].ChannelHandle;
+                inSettings = _epics_ca_connections[endPointID];
                 tcs.SetResult(EcaType.ECA_NORMAL);
                 return tcs.Task.Result;
             }
@@ -44,9 +44,9 @@ namespace Convergence
                 // Do connection with a connection callback.
                 EcaType chCreateResult = EcaType.ECA_DISCONN;
                 chCreateResult = EPICSWrapper.ca_create_channel(
-                                       endPointArgs.EndPointID.EndPointName ?? "",
+                                       endPointID.EndPointName ?? "",
                                         connectionCallback: connectCallback,
-                                        out channelHandle);
+                                        out inSettings.ChannelHandle);
                 if (chCreateResult != EcaType.ECA_NORMAL)
                 {
                     tcs.SetResult(chCreateResult);
@@ -58,12 +58,18 @@ namespace Convergence
                     tcs.SetResult(EcaType.ECA_EVDISALLOW);
                     return tcs.Task.Result;
                 }
+                var state = EPICSWrapper.ca_state(inSettings.ChannelHandle);
+                if (state == ChannelState.NeverConnected || state == ChannelState.Closed)
+                {
+                    tcs.SetResult(EcaType.ECA_DISCONN);
+                    return tcs.Task.Result;
+                }                
 
                 if (chCreateResult == EcaType.ECA_NORMAL)
                 {
                     // Try add a new ID, if not already added.
                     endPointID.UniqueId = Guid.NewGuid();
-                    if (!_epics_ca_connections!.TryAdd(endPointID, epicsSettings))
+                    if (!_epics_ca_connections!.TryAdd(endPointID, inSettings))
                         tcs.SetResult(EcaType.ECA_NEWCONN); // New or resumed network connection
                     else
                         tcs.SetResult(EcaType.ECA_NORMAL);

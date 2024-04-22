@@ -34,6 +34,7 @@ namespace Convergence
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="endPointArgs"></param>
+        /// <param name="connectCallback"></param>
         /// <returns></returns>
         public async Task<EndPointStatus> ConnectAsync<T1,T2>(EndPointBase<T1> endPointArgs, T2? connectCallback)
         {
@@ -43,7 +44,8 @@ namespace Convergence
                     if (endPointArgs is EndPointBase<Convergence.IO.EPICS.Settings>)
                     {
                         var settings = endPointArgs.Settings as Convergence.IO.EPICS.Settings;
-                        var result = await EpicsCaConnectAsync(endPointArgs.EndPointID, settings!.ChannelHandle, connectCallback as CaConnectCallback);
+                        var callback = connectCallback as CaConnectCallback;    
+                        var result = await EpicsCaConnectAsync(endPointArgs.EndPointID, settings, callback);
                         return GetEPICSEndPointStatus(result);
                     }
                     break;

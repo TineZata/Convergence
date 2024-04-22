@@ -15,6 +15,7 @@ namespace SubscriptionTests
 {
     public class EPICS_CA_SubscriptionTests
     {
+        Action NullCallBack = null;
         [Test]
         public async Task EPICS_CA_Subscribe_returns_valid_value()
         {
@@ -26,7 +27,7 @@ namespace SubscriptionTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int16 data = -11;
             // Set up a subscription and await a callback
@@ -79,7 +80,7 @@ namespace SubscriptionTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int32 data = -5;
             // Set up a subscription and await a callback
@@ -132,7 +133,7 @@ namespace SubscriptionTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             float data = -5.0f;
             // Set up a subscription and await a callback
@@ -184,7 +185,7 @@ namespace SubscriptionTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             double data = -5.0;
             // Set up a subscription and await a callback
@@ -236,7 +237,7 @@ namespace SubscriptionTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             string data = "Disconnected";
             // Set up a subscription and await a callback

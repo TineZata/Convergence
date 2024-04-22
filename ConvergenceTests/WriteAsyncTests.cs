@@ -14,6 +14,7 @@ namespace WriteTests
 {
     public class EPICS_CA_WriteAsyncTests
     {
+        Action NullCallBack = null;
         [Test]
         public async Task EPICS_CA_WriteAsync_returns_valid_value()
         {
@@ -25,7 +26,7 @@ namespace WriteTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             Int16 testValue = 0;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -68,7 +69,7 @@ namespace WriteTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             Int32 testValue = 655566;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -111,7 +112,7 @@ namespace WriteTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             float testValue = 3.14159f;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -154,7 +155,7 @@ namespace WriteTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             double testValue = double.MaxValue;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -197,7 +198,7 @@ namespace WriteTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             string testValue = "Hello, World!";
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);

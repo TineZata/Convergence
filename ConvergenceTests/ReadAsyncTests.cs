@@ -13,6 +13,7 @@ namespace ReadTests
 {
     public class EPICS_CA_ReadAsyncTests
     {
+        Action NullCallBack = null;
         [Test]
         public async Task EPICS_CA_ReadAsync_returns_valid_value()
         {
@@ -24,7 +25,7 @@ namespace ReadTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int16 data = -1;
             // Read async and await a callback
@@ -52,7 +53,7 @@ namespace ReadTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int32 data = -5;
             // Read async and await a callback
@@ -80,7 +81,7 @@ namespace ReadTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             float data = -6.1f;
             // Read async and await a callback
@@ -108,7 +109,7 @@ namespace ReadTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             double data = -6.1;
             // Read async and await a callback
@@ -136,7 +137,7 @@ namespace ReadTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             string data = "Disconnected";
             // Read async and await a callback

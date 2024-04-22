@@ -12,8 +12,11 @@ namespace ConnectTests
 
     public class AllProtocolsConnectionTests
     {
+        Action NullCallBack = null;
+
+        private EPICSCaConnectCallback CaConnectCallback;
+
         // Create a callback function of type CaConnectCallback
-       
         private void OnConnect(ConnectionStatusChangedEventArgs args)
         {
             args.connectionState.Should().Be(ConnectionStatusChangedEventArgs.CA_OP_CONN_UP);
@@ -21,7 +24,7 @@ namespace ConnectTests
         
         // Test for ConvergenceLib.IO.EPICS.Settings is set correctlty for EPICS Channel Access, a valid Guid is returned.
         [Test]
-        public void EPICS_CA_Connect_returns_valid_ID()
+        public async Task EPICS_CA_Connect_returns_valid_ID()
         {
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
@@ -30,7 +33,8 @@ namespace ConnectTests
                 isServer: false, 
                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, OnConnect);
+            CaConnectCallback = OnConnect;
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, CaConnectCallback);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 
@@ -44,7 +48,7 @@ namespace ConnectTests
                 isServer: false,
                 isPVA: false);
             var endPointArgs1 = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs1, null);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs1, NullCallBack);
             endPointArgs1.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
             // Creating a new EPICSSettings with the same EndPointID should return a the same Guid.
             var endPointId2 = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
@@ -55,7 +59,7 @@ namespace ConnectTests
                                 isPVA: false);
             var endPointArgs2 = new EndPointBase<EPICSSettings> { EndPointID = endPointId2, Settings = epicSettings2 };
             // Calling Connect again with the same EndPointID should return a different Guid.
-           ConvergenceInstance.Hub.ConnectAsync(endPointArgs2, null);
+           ConvergenceInstance.Hub.ConnectAsync(endPointArgs2, NullCallBack);
             endPointArgs2.EndPointID.UniqueId.Should().NotBe(endPointArgs1.EndPointID.UniqueId);
         }
 
@@ -70,7 +74,7 @@ namespace ConnectTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, null);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 
@@ -85,7 +89,7 @@ namespace ConnectTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, null);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 
@@ -100,7 +104,7 @@ namespace ConnectTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, null);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 
@@ -115,7 +119,7 @@ namespace ConnectTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, null);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
     }
