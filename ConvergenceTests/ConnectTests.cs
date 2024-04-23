@@ -14,18 +14,19 @@ namespace ConnectTests
     {
         Action NullCallBack = null;
 
-        private EPICSCaConnectCallback CaConnectCallback;
+        private ConnectionEventCallbackArgs _callbackArgs;
 
         // Create a callback function of type CaConnectCallback
-        private void OnConnect(ConnectionStatusChangedEventArgs args)
+        private void OnConnect(ConnectionEventCallbackArgs args)
         {
-            args.connectionState.Should().Be(ConnectionStatusChangedEventArgs.CA_OP_CONN_UP);
+            _callbackArgs = args;
         }
         
         // Test for ConvergenceLib.IO.EPICS.Settings is set correctlty for EPICS Channel Access, a valid Guid is returned.
         [Test]
         public async Task EPICS_CA_Connect_returns_valid_ID()
         {
+            _callbackArgs = new ConnectionEventCallbackArgs();
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
                 datatype: EPICSDataTypes.DBF_SHORT_i16, 
@@ -33,8 +34,10 @@ namespace ConnectTests
                 isServer: false, 
                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            CaConnectCallback = OnConnect;
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, CaConnectCallback);
+            var connResult = await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, (EPICSCaConnectCallback)OnConnect);
+            connResult.Should().Be(EndPointStatus.Okay);
+            _callbackArgs.chid.Should().NotBe(IntPtr.Zero);
+            _callbackArgs.op.Should().Be(ConnectionEventCallbackArgs.CA_OP_CONN_UP);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 

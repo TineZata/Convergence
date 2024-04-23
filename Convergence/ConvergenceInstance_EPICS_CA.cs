@@ -12,7 +12,7 @@ namespace Convergence
 {
     public partial class ConvergenceInstance
     {
-        private double _epics_timeout = 0.5;
+        public static readonly double EPICS_TIMEOUT_SEC = 0.5;
         /// <summary>
         /// Handles the EPICS CA connection.
         /// </summary>
@@ -45,7 +45,7 @@ namespace Convergence
                 EcaType chCreateResult = EcaType.ECA_DISCONN;
                 chCreateResult = EPICSWrapper.ca_create_channel(
                                        endPointID.EndPointName ?? "",
-                                        connectionCallback: connectCallback,
+                                        connectCallback,
                                         out inSettings.ChannelHandle);
                 if (chCreateResult != EcaType.ECA_NORMAL)
                 {
@@ -53,17 +53,24 @@ namespace Convergence
                     return tcs.Task.Result;
                 }
 
-                if (EPICSWrapper.ca_pend_io(_epics_timeout) == EcaType.ECA_EVDISALLOW)
+                // If the callback is not null the channel access does not block on a pend_io, 
+                // however a call is still required to flush the IO.
+                if (EPICSWrapper.ca_pend_io(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
                 {
                     tcs.SetResult(EcaType.ECA_EVDISALLOW);
                     return tcs.Task.Result;
                 }
-                var state = EPICSWrapper.ca_state(inSettings.ChannelHandle);
-                if (state == ChannelState.NeverConnected || state == ChannelState.Closed)
+                // If the callback is null, then we need to explicitly check the state of the channel,
+                // as connection will just return ECA_NORMAL, so an additional check is required.
+                if (connectCallback == null)
                 {
-                    tcs.SetResult(EcaType.ECA_DISCONN);
-                    return tcs.Task.Result;
-                }                
+                    var state = EPICSWrapper.ca_state(inSettings.ChannelHandle);
+                    if (state == ChannelState.NeverConnected || state == ChannelState.Closed)
+                    {
+                        tcs.SetResult(EcaType.ECA_DISCONN);
+                        return tcs.Task.Result;
+                    }
+                }
 
                 if (chCreateResult == EcaType.ECA_NORMAL)
                 {
@@ -132,7 +139,7 @@ namespace Convergence
             nElements: epicsSettings.ElementCount,
             valueUpdateCallBack: callback!);
             // Do the pend event to block until the callback is invoked.
-            if (EPICSWrapper.ca_pend_event(_epics_timeout) == EcaType.ECA_EVDISALLOW)
+            if (EPICSWrapper.ca_pend_event(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
                 tcs.SetResult(EcaType.ECA_EVDISALLOW);
             if (getResult != EcaType.ECA_NORMAL)
             {
@@ -270,7 +277,7 @@ namespace Convergence
                     return tcs.Task;
                 }
                 // Do the pend event to block until the callback is invoked.
-                result = EPICSWrapper.ca_pend_event(_epics_timeout);
+                result = EPICSWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
                 if (result == EcaType.ECA_TIMEOUT) // ca_pend_event() returns ECA_TIMEOUT if successful.
                     tcs.SetResult(EcaType.ECA_NORMAL);
                 else
