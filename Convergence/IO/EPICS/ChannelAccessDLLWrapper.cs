@@ -359,7 +359,8 @@ namespace Convergence.IO.EPICS
             // Check that write access is allowed
             if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
             // Check that the data type is valid
-            if (type == ca_field_type(pChanID)) return EcaType.ECA_BADTYPE; 
+            if (((Int16)type) != ca_field_type(pChanID)) 
+                return EcaType.ECA_BADTYPE; 
             // assign userArg to ca_puser(pChanID)
             var userArg = ca_puser(pChanID);
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(
@@ -471,7 +472,7 @@ namespace Convergence.IO.EPICS
             // Check that write access is allowed
             if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
             // Check that the data type is valid
-            if (dbrType == ca_field_type(pChanID)) return EcaType.ECA_BADTYPE;
+            if ((Int16)dbrType != ca_field_type(pChanID)) return EcaType.ECA_BADTYPE;
             // assign userArg to ca_puser(pChanID)
             var userArg = ca_puser(pChanID);
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put_callback(
@@ -717,16 +718,10 @@ namespace Convergence.IO.EPICS
             static extern UInt32 ca_element_count(IntPtr pChanID);
         }
 
-        public static DbFieldType ca_field_type(this IntPtr pChanID)
+        public static Int16 ca_field_type(this IntPtr pChanID)
         {
-            if (Enum.TryParse<DbFieldType>(CA_EXTRACT_MSG_NO(ca_field_type(pChanID)).ToString(), out DbFieldType result))
-            {
-                return result;
-            }
-            else
-            {
-                throw new InvalidCastException("ca_field_type: Unable to cast DbFieldType from Int32");
-            }
+            return ca_field_type(pChanID);
+            
             [DllImport(CA_DLL_NAME)]
             // Returns the native 'field type' in the server of the process variable.
             // The returned code will be one of the DBF_ values, or 'DBF_NO_ACCESS'

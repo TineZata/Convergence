@@ -130,7 +130,7 @@ namespace Convergence.IO.EPICS
                     string[] stringArray = new string[args.count];
                     for (int i = 0; i < args.count; i++)
                     {
-                        stringArray[i] = Marshal.PtrToStringAnsi(Marshal.ReadIntPtr(args.dbr, i * IntPtr.Size));
+                        stringArray[i] = Marshal.PtrToStringAnsi(args.dbr);
                     }
                     if (stringArray.Length == 1)
                     {

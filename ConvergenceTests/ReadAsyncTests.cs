@@ -150,7 +150,7 @@ namespace ReadTests
                 throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVString");
             }
             status.Should().Be(EndPointStatus.Okay);
-            data.Should().Be("Disconnected");
+            data.Should().Be("I'm a string.");
         }
     }
 }
