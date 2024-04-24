@@ -74,6 +74,7 @@ namespace Convergence.IO.EPICS
             {
                 // Decode data for and BDF_SHORT_i16
                 case DbFieldType.DBF_SHORT_i16:
+                case DbFieldType.DBF_ENUM_i16:
                     Int16[] shortArray = new Int16[args.count];
                     Marshal.Copy(args.dbr, shortArray, 0, args.count);
                     if (shortArray.Length == 1)

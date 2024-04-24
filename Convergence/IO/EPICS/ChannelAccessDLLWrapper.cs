@@ -359,7 +359,12 @@ namespace Convergence.IO.EPICS
             // Check that write access is allowed
             if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
             // Check that the data type is valid
-            if (((Int16)type) != ca_field_type(pChanID)) 
+            var returnedType = ca_field_type(pChanID);
+            // If user defined type is DbFieldType.DBF_FLOAT_f32 the the return type can either be DBR_FLOAT or DBR_DOUBLE.
+            // Actually I've never observer a float type being returned, however this is possible according to the EPICS documentation when 
+            // PREC is set to the correct value.
+            bool isFloat = (type == DbFieldType.DBF_FLOAT_f32) && ((returnedType == (Int16)DbFieldType.DBF_FLOAT_f32) || returnedType == (Int16)DbFieldType.DBF_DOUBLE_f64);
+            if (((Int16)type) != returnedType && !isFloat)
                 return EcaType.ECA_BADTYPE; 
             // assign userArg to ca_puser(pChanID)
             var userArg = ca_puser(pChanID);

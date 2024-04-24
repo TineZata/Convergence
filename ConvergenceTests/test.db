@@ -19,6 +19,7 @@ record(ai, "Test:PVFloat") {
     field(EGU,  "mm")
     field(PINI,  "YES")
     field(VAL, "-5.5")
+    field(PREC, "1")
 }
 
 record(ai, "Test:PVDouble") {

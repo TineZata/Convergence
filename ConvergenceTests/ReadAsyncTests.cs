@@ -15,12 +15,12 @@ namespace ReadTests
     {
         Action NullCallBack = null;
         [Test]
-        public async Task EPICS_CA_ReadAsync_returns_valid_value()
+        public async Task EPICS_CA_ReadAsync_returns_boolean_PV()
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_SHORT_i16,
+                                datatype: EPICSDataTypes.DBF_ENUM_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
