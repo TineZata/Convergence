@@ -128,19 +128,8 @@ namespace Convergence.IO.EPICS
 
                 // Decode data for and DBF_STRING
                 case DbFieldType.DBF_STRING_s39:
-                    string[] stringArray = new string[args.count];
-                    for (int i = 0; i < args.count; i++)
-                    {
-                        stringArray[i] = Marshal.PtrToStringAnsi(args.dbr);
-                    }
-                    if (stringArray.Length == 1)
-                    {
-                        data = stringArray[0];
-                    }
-                    else
-                    {
-                        data = stringArray;
-                    }
+                    string stringArray = Marshal.PtrToStringAnsi(args.dbr);
+                    data = stringArray;
                     return data;
             }
             return data;

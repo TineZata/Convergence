@@ -477,16 +477,22 @@ namespace Convergence.IO.EPICS
             // Check that write access is allowed
             if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
             // Check that the data type is valid
-            if ((Int16)dbrType != ca_field_type(pChanID)) return EcaType.ECA_BADTYPE;
+            var returnedType = ca_field_type(pChanID);
             // assign userArg to ca_puser(pChanID)
-            var userArg = ca_puser(pChanID);
+            // If user defined type is DbFieldType.DBF_FLOAT_f32 the the return type can either be DBR_FLOAT or DBR_DOUBLE.
+            // Actually I've never observer a float type being returned, however this is possible according to the EPICS documentation when 
+            // PREC is set to the correct value.
+            bool isFloat = (dbrType == DbFieldType.DBF_FLOAT_f32) && ((returnedType == (Int16)DbFieldType.DBF_FLOAT_f32) || returnedType == (Int16)DbFieldType.DBF_DOUBLE_f64);
+            if (((Int16)dbrType) != returnedType && !isFloat)
+                return EcaType.ECA_BADTYPE;
+            
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put_callback(
               (Int16)dbrType,
               (uint)nElements,
               pChanID,
               (IntPtr)ptrValueToWrite, // New value is copied from here
               writeCallback, // Event will be raised when successful write is confirmed
-              (IntPtr)userArg
+              (IntPtr)ca_puser(pChanID)
             )).ToString(), out EcaType result))
             {
                 return result;

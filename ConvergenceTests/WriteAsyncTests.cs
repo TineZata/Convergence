@@ -21,7 +21,7 @@ namespace WriteTests
             // Create a new connections and then attempt to write the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_SHORT_i16,
+                                datatype: EPICSDataTypes.DBF_ENUM_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
@@ -201,32 +201,23 @@ namespace WriteTests
             await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             string testValue = "Hello, World!";
-            GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
-            try
+            IntPtr valuePtr = Marshal.StringToHGlobalAnsi(testValue);
+            // Write async and await a callback
+            EndPointStatus status = await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
             {
-                IntPtr valuePtr = Marshal.StringToHGlobalAnsi(testValue);
-                // Write async and await a callback
-                EndPointStatus status = await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
+                // Read the value back to verify the write
+                var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
                 {
-                    // Read the value back to verify the write
-                    var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
-                    {
-                        var data = (string)epicSettings.DecodeEventData(value);
-                        data.Should().Be(testValue);
-                    });
-                    readStatus.Result.Should().Be(EndPointStatus.Okay);
+                    var data = (string)epicSettings.DecodeEventData(value);
+                    data.Should().Be(testValue);
                 });
-                if (status == EndPointStatus.Disconnected)
-                {
-                    throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVString");
-                }
-                status.Should().Be(EndPointStatus.Okay);
-            }
-            finally
+                readStatus.Result.Should().Be(EndPointStatus.Okay);
+            });
+            if (status == EndPointStatus.Disconnected)
             {
-                if (handle.IsAllocated)
-                    handle.Free();
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVString");
             }
+            status.Should().Be(EndPointStatus.Okay);
         }
     }
 }

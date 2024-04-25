@@ -22,7 +22,7 @@ namespace SubscriptionTests
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_SHORT_i16,
+                                datatype: EPICSDataTypes.DBF_ENUM_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
@@ -251,29 +251,17 @@ namespace SubscriptionTests
             }
             else
             {
-                GCHandle handle0 = GCHandle.Alloc("Ahoy, world", GCHandleType.Pinned);
-                GCHandle handle1 = GCHandle.Alloc("I'm a string.", GCHandleType.Pinned);
-                try
-                {
-                    // Ensure the PV is set to 0
-                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
-                    // Do a write to the PV to trigger the subscription
-                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
-                    Task.Delay(100).Wait();
-                    data.Should().Be("Ahoy, world");
-                    // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
-                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
-                    await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
-                    Task.Delay(100).Wait();
-                    data.Should().Be("I'm a string.");
-                }
-                finally
-                {
-                    if (handle0.IsAllocated)
-                        handle0.Free();
-                    if (handle1.IsAllocated)
-                        handle1.Free();
-                }
+                // Ensure the PV is set to 0
+                IntPtr valuePtr0 = Marshal.StringToHGlobalAnsi("Ahoy, world");
+                // Do a write to the PV to trigger the subscription
+                await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
+                Task.Delay(100).Wait();
+                data.Should().Be("Ahoy, world");
+                // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
+                IntPtr valuePtr1 = Marshal.StringToHGlobalAnsi("I'm a string.");
+                await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
+                Task.Delay(100).Wait();
+                data.Should().Be("I'm a string.");
             }
         }
     }
