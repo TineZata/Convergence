@@ -25,7 +25,7 @@ namespace Convergence
         }
 
         public EndPointID(Protocols protocol, string endPointName)
-            : this(protocol, Guid.NewGuid(), endPointName)
+            : this(protocol, Guid.Empty, endPointName)
         {
             this.Protocol = protocol;
         }

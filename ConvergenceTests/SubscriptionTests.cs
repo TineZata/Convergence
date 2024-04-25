@@ -15,24 +15,25 @@ namespace SubscriptionTests
 {
     public class EPICS_CA_SubscriptionTests
     {
+        Action NullCallBack = null;
         [Test]
         public async Task EPICS_CA_Subscribe_returns_valid_value()
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_SHORT_i16,
+                                datatype: EPICSDataTypes.DBF_ENUM_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int16 data = -11;
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (Int16)epicSettings.DecodeData(value);
+                data = (Int16)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -79,13 +80,13 @@ namespace SubscriptionTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int32 data = -5;
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (Int32)epicSettings.DecodeData(value);
+                data = (Int32)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -132,13 +133,13 @@ namespace SubscriptionTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             float data = -5.0f;
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (float)epicSettings.DecodeData(value);
+                data = (float)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -184,13 +185,13 @@ namespace SubscriptionTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             double data = -5.0;
             // Set up a subscription and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
             {
-                data = (double)epicSettings.DecodeData(value);
+                data = (double)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -221,6 +222,46 @@ namespace SubscriptionTests
                     if (handle1.IsAllocated)
                         handle1.Free();
                 }
+            }
+        }
+
+        // Create a test for subscribing to a string Test:PVString
+        [Test]
+        public async Task EPICS_CA_Subscribe_to_string_PV()
+        {
+            // Create a new connections and then attempt to read the value.
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
+            var epicSettings = new EPICSSettings(
+                                datatype: EPICSDataTypes.DBF_STRING_s39,
+                                elementCount: 1,
+                                isServer: false,
+                                isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            
+            string data = "Disconnected";
+            // Set up a subscription and await a callback
+            EndPointStatus status = await ConvergenceInstance.Hub.SubscribeAsync<CaMonitorTypes, EPICSCaMonitorCallback>(endPointArgs.EndPointID, CaMonitorTypes.MonitorValField, (value) =>
+            {
+                data = (string)epicSettings.DecodeEventData(value);
+            });
+            if (status == EndPointStatus.Disconnected)
+            {
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVString");
+            }
+            else
+            {
+                // Ensure the PV is set to 0
+                IntPtr valuePtr0 = Marshal.StringToHGlobalAnsi("Ahoy, world");
+                // Do a write to the PV to trigger the subscription
+                await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
+                Task.Delay(100).Wait();
+                data.Should().Be("Ahoy, world");
+                // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
+                IntPtr valuePtr1 = Marshal.StringToHGlobalAnsi("I'm a string.");
+                await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
+                Task.Delay(100).Wait();
+                data.Should().Be("I'm a string.");
             }
         }
     }

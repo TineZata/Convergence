@@ -66,7 +66,7 @@ namespace Convergence.IO.EPICS
         }
 
         // Decode EPICS data according to the data type.
-        public object DecodeData(EventCallbackArgs args)
+        public object DecodeEventData(EventCallbackArgs args)
         {
             object data = null;
             Enum.TryParse<DbFieldType>(args.type.ToString(), out var type);
@@ -74,6 +74,7 @@ namespace Convergence.IO.EPICS
             {
                 // Decode data for and BDF_SHORT_i16
                 case DbFieldType.DBF_SHORT_i16:
+                case DbFieldType.DBF_ENUM_i16:
                     Int16[] shortArray = new Int16[args.count];
                     Marshal.Copy(args.dbr, shortArray, 0, args.count);
                     if (shortArray.Length == 1)
@@ -123,6 +124,12 @@ namespace Convergence.IO.EPICS
                     {
                         data = doubleArray;
                     }
+                    return data;
+
+                // Decode data for and DBF_STRING
+                case DbFieldType.DBF_STRING_s39:
+                    string stringArray = Marshal.PtrToStringAnsi(args.dbr);
+                    data = stringArray;
                     return data;
             }
             return data;

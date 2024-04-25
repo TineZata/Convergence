@@ -13,24 +13,25 @@ namespace ReadTests
 {
     public class EPICS_CA_ReadAsyncTests
     {
+        Action NullCallBack = null;
         [Test]
-        public async Task EPICS_CA_ReadAsync_returns_valid_value()
+        public async Task EPICS_CA_ReadAsync_returns_boolean_PV()
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_SHORT_i16,
+                                datatype: EPICSDataTypes.DBF_ENUM_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int16 data = -1;
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (Int16)epicSettings.DecodeData(value);
+                data = (Int16)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -52,13 +53,13 @@ namespace ReadTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int32 data = -5;
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (Int32)epicSettings.DecodeData(value);
+                data = (Int32)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -80,13 +81,13 @@ namespace ReadTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             float data = -6.1f;
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (float)epicSettings.DecodeData(value);
+                data = (float)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -108,13 +109,13 @@ namespace ReadTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             double data = -6.1;
             // Read async and await a callback
             EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (double)epicSettings.DecodeData(value);
+                data = (double)epicSettings.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -122,6 +123,34 @@ namespace ReadTests
             }
             status.Should().Be(EndPointStatus.Okay);
             data.Should().Be(double.MinValue);
+        }
+
+        // Create a test for reading from a string Test:PVString
+        [Test]
+        public async Task EPICS_CA_ReadAsync_from_string_PV()
+        {
+            // Create a new connections and then attempt to read the value.
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
+            var epicSettings = new EPICSSettings(
+                                    datatype: EPICSDataTypes.DBF_STRING_s39,
+                                    elementCount: 1,
+                                    isServer: false,
+                                    isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            
+            string data = "Disconnected";
+            // Read async and await a callback
+            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+            {
+                data = (string)epicSettings.DecodeEventData(value);
+            });
+            if (status == EndPointStatus.Disconnected)
+            {
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVString");
+            }
+            status.Should().Be(EndPointStatus.Okay);
+            data.Should().Be("I'm a string.");
         }
     }
 }

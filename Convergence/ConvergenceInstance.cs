@@ -31,17 +31,32 @@ namespace Convergence
         
         /// <summary>
         /// Generic Connect method for all protocols.
+        /// 
+        /// Callback will not be call is the initial connection fails. Callback indicated a change in connection and
+        /// therefore if no connection is made in the first place, then there is no change to the connection.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="endPointArgs"></param>
+        /// <param name="connectCallback"></param>
         /// <returns></returns>
-        public async Task<EndPointStatus> ConnectAsync<T>(EndPointBase<T> endPointArgs)
+        public async Task<EndPointStatus> ConnectAsync<T1,T2>(EndPointBase<T1> endPointArgs, T2? connectCallback)
         {
             switch (endPointArgs.EndPointID.Protocol)
             {
                 case Protocols.EPICS_CA:
-                    var result = await EpicsCaConnectAsync(endPointArgs);
-                    return GetEPICSEndPointStatus(result);
+                    if (endPointArgs is EndPointBase<Convergence.IO.EPICS.Settings>)
+                    {
+                        var settings = endPointArgs.Settings as Convergence.IO.EPICS.Settings;
+                        var callback = connectCallback as CaConnectCallback;    
+                        var result = await EpicsCaConnectAsync(endPointArgs.EndPointID, settings, callback);
+                        // Introduce a delay if callback is not null as pend_io will not block.
+                        if (callback != null)
+                        {
+                            await Task.Delay((int)(ConvergenceInstance.EPICS_TIMEOUT_SEC*10000));
+                        }
+                        return GetEPICSEndPointStatus(result);
+                    }
+                    break;
             }
             return EndPointStatus.UnknownError;
         }
@@ -116,7 +131,5 @@ namespace Convergence
             }
             return EndPointStatus.UnknownError;
         }
-
-        
     }
 }

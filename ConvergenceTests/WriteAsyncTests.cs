@@ -14,18 +14,19 @@ namespace WriteTests
 {
     public class EPICS_CA_WriteAsyncTests
     {
+        Action NullCallBack = null;
         [Test]
         public async Task EPICS_CA_WriteAsync_returns_valid_value()
         {
             // Create a new connections and then attempt to write the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_SHORT_i16,
+                                datatype: EPICSDataTypes.DBF_ENUM_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             Int16 testValue = 0;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -38,7 +39,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (Int16)epicSettings.DecodeData(value);
+                        var data = (Int16)epicSettings.DecodeEventData(value);
                         data.Should().Be(testValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -68,7 +69,7 @@ namespace WriteTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             Int32 testValue = 655566;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -81,7 +82,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (Int32)epicSettings.DecodeData(value);
+                        var data = (Int32)epicSettings.DecodeEventData(value);
                         data.Should().Be(testValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -111,7 +112,7 @@ namespace WriteTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             float testValue = 3.14159f;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -124,7 +125,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (float)epicSettings.DecodeData(value);
+                        var data = (float)epicSettings.DecodeEventData(value);
                         data.Should().Be(testValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -154,7 +155,7 @@ namespace WriteTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             double testValue = double.MaxValue;
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
@@ -167,7 +168,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (double)epicSettings.DecodeData(value);
+                        var data = (double)epicSettings.DecodeEventData(value);
                         data.Should().Be(double.MaxValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -183,6 +184,40 @@ namespace WriteTests
                 if (handle.IsAllocated)
                     handle.Free();
             }
+        }
+
+        // Create a test for writing to a string Test:PVString
+        [Test]
+        public async Task EPICS_CA_WriteAsync_to_string_PV()
+        {
+            // Create a new connections and then attempt to write the value.
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
+            var epicSettings = new EPICSSettings(
+                                datatype: EPICSDataTypes.DBF_STRING_s39,
+                                elementCount: 1,
+                                isServer: false,
+                                isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+
+            string testValue = "Hello, World!";
+            IntPtr valuePtr = Marshal.StringToHGlobalAnsi(testValue);
+            // Write async and await a callback
+            EndPointStatus status = await ConvergenceInstance.Hub.WriteAsync<EPICSCaWriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
+            {
+                // Read the value back to verify the write
+                var readStatus = ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+                {
+                    var data = (string)epicSettings.DecodeEventData(value);
+                    data.Should().Be(testValue);
+                });
+                readStatus.Result.Should().Be(EndPointStatus.Okay);
+            });
+            if (status == EndPointStatus.Disconnected)
+            {
+                throw new Exception("Disconnected: Make sure you are running an IOC with pvname = Test:PVString");
+            }
+            status.Should().Be(EndPointStatus.Okay);
         }
     }
 }

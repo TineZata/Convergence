@@ -1,5 +1,4 @@
 ﻿using EPICSWrapper = Convergence.IO.EPICS.ChannelAccessDLLWrapper;
-using EPICSCallBack = Convergence.IO.ConnectionCallback;
 using Convergence.IO.EPICS;
 using System.Runtime.InteropServices;
 using System.Reflection;
@@ -13,7 +12,7 @@ namespace Convergence
 {
     public partial class ConvergenceInstance
     {
-        private double _epics_timeout = 0.5;
+        public static readonly double EPICS_TIMEOUT_SEC = 0.5;
         /// <summary>
         /// Handles the EPICS CA connection.
         /// </summary>
@@ -21,19 +20,18 @@ namespace Convergence
         /// <param name="endPointArgs"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public async Task<EcaType> EpicsCaConnectAsync<T>(EndPointBase<T> endPointArgs)
+        public async Task<EcaType> EpicsCaConnectAsync(EndPointID endPointID, Settings inSettings, CaConnectCallback? connectCallback)
         {
             var tcs = new TaskCompletionSource<EcaType>();
-            var endPointID = endPointArgs.EndPointID;
             // Check if the CA ID already exists.
             if (_epics_ca_connections!.ContainsKey(endPointID))
             {
+                inSettings = _epics_ca_connections[endPointID];
                 tcs.SetResult(EcaType.ECA_NORMAL);
                 return tcs.Task.Result;
             }
             else
             {
-                var epicsSettings = endPointArgs.ConvertToEPICSSettings();
                 // Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
                 var contextResult = EPICSWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
                 if (contextResult != EcaType.ECA_NORMAL)
@@ -42,24 +40,43 @@ namespace Convergence
                     return tcs.Task.Result;
                 }
 
-                var chCreateResult = EPICSWrapper.ca_create_channel(endPointArgs.EndPointID.EndPointName ?? "", null, out epicsSettings.ChannelHandle);
+                //var chCreateResult = EPICSWrapper.ca_create_channel(endPointArgs.EndPointID.EndPointName ?? "", null, out epicsSettings.ChannelHandle);
+                // Do connection with a connection callback.
+                EcaType chCreateResult = EcaType.ECA_DISCONN;
+                chCreateResult = EPICSWrapper.ca_create_channel(
+                                       endPointID.EndPointName ?? "",
+                                        connectCallback,
+                                        out inSettings.ChannelHandle);
                 if (chCreateResult != EcaType.ECA_NORMAL)
                 {
                     tcs.SetResult(chCreateResult);
                     return tcs.Task.Result;
                 }
 
-                if (EPICSWrapper.ca_pend_io(_epics_timeout) == EcaType.ECA_EVDISALLOW)
+                // If the callback is not null the channel access does not block on a pend_io, 
+                // however a call is still required to flush the IO.
+                if (EPICSWrapper.ca_pend_io(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
                 {
                     tcs.SetResult(EcaType.ECA_EVDISALLOW);
                     return tcs.Task.Result;
+                }
+                // If the callback is null, then we need to explicitly check the state of the channel,
+                // as connection will just return ECA_NORMAL, so an additional check is required.
+                if (connectCallback == null)
+                {
+                    var state = EPICSWrapper.ca_state(inSettings.ChannelHandle);
+                    if (state == ChannelState.NeverConnected || state == ChannelState.Closed)
+                    {
+                        tcs.SetResult(EcaType.ECA_DISCONN);
+                        return tcs.Task.Result;
+                    }
                 }
 
                 if (chCreateResult == EcaType.ECA_NORMAL)
                 {
                     // Try add a new ID, if not already added.
                     endPointID.UniqueId = Guid.NewGuid();
-                    if (!_epics_ca_connections!.TryAdd(endPointID, epicsSettings))
+                    if (!_epics_ca_connections!.TryAdd(endPointID, inSettings))
                         tcs.SetResult(EcaType.ECA_NEWCONN); // New or resumed network connection
                     else
                         tcs.SetResult(EcaType.ECA_NORMAL);
@@ -122,7 +139,7 @@ namespace Convergence
             nElements: epicsSettings.ElementCount,
             valueUpdateCallBack: callback!);
             // Do the pend event to block until the callback is invoked.
-            if (EPICSWrapper.ca_pend_event(_epics_timeout) == EcaType.ECA_EVDISALLOW)
+            if (EPICSWrapper.ca_pend_event(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
                 tcs.SetResult(EcaType.ECA_EVDISALLOW);
             if (getResult != EcaType.ECA_NORMAL)
             {
@@ -260,7 +277,7 @@ namespace Convergence
                     return tcs.Task;
                 }
                 // Do the pend event to block until the callback is invoked.
-                result = EPICSWrapper.ca_pend_event(_epics_timeout);
+                result = EPICSWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
                 if (result == EcaType.ECA_TIMEOUT) // ca_pend_event() returns ECA_TIMEOUT if successful.
                     tcs.SetResult(EcaType.ECA_NORMAL);
                 else

@@ -12,6 +12,8 @@ namespace DisconnectTests
 {
     public class AllProtocolsDisconnectTests
     {
+        Action NullCallBack = null;
+
         [Test]
         public void EPICS_CA_Disconnect_removes_from_hub()
         {
@@ -22,7 +24,7 @@ namespace DisconnectTests
                                 isServer: false,
                                 isPVA: false);
             var endPointArgs1 = new EndPointBase<EPICSSettings> { EndPointID = endPointId1, Settings = epicSettings1 };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs1);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs1, NullCallBack);
             endPointArgs1.EndPointID.UniqueId .Should().NotBe(Guid.Empty);
             // Calling Disconnect should remove the EndPointID from the Hub.
             var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs1.EndPointID);
@@ -36,7 +38,7 @@ namespace DisconnectTests
                                 isPVA: false);
             var endPointArgs2 = new EndPointBase<EPICSSettings> { EndPointID = endPointId2, Settings = epicSettings2 };
             // Calling Connect again with the same EndPointID should return a different Guid.
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs2);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs2, NullCallBack);
             endPointArgs2.EndPointID.UniqueId.Should().NotBe(endPointArgs1.EndPointID.UniqueId);
         }
 
@@ -51,7 +53,7 @@ namespace DisconnectTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
             // Calling Disconnect should remove the EndPointID from the Hub.
             var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs.EndPointID);
@@ -68,7 +70,7 @@ namespace DisconnectTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
             // Calling Disconnect should remove the EndPointID from the Hub.
             var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs.EndPointID);
@@ -86,7 +88,25 @@ namespace DisconnectTests
                                     isServer: false,
                                     isPVA: false);
             var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            ConvergenceInstance.Hub.ConnectAsync(endPointArgs);
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
+            // Calling Disconnect should remove the EndPointID from the Hub.
+            var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs.EndPointID);
+            isDiscon.Should().BeTrue();
+        }
+
+        // Create a test for disconnecting from an Test:PVString
+        [Test]
+        public void EPICS_CA_Disconnect_from_string_PV()
+        {
+            var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
+            var epicSettings = new EPICSSettings(
+                                    datatype: EPICSDataTypes.DBF_STRING_s39,
+                                    elementCount: 1,
+                                    isServer: false,
+                                    isPVA: false);
+            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
+            ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
             // Calling Disconnect should remove the EndPointID from the Hub.
             var isDiscon = ConvergenceInstance.Hub.Disconnect(endPointArgs.EndPointID);
