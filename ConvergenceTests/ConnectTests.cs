@@ -8,7 +8,6 @@ namespace ConnectTests
     public class AllProtocolsConnectionTests
     {
         Action NullCallBack = null;
-
         private Convergence.IO.EPICS.CA.ConnectionEventCallbackArgs _callbackArgs;
 
         // Create a callback function of type CaConnectCallback
@@ -29,12 +28,12 @@ namespace ConnectTests
                 isServer: false, 
                 isPVA: false);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
-            var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, OnConnect);
+            var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, (Convergence.IO.EPICS.CA.EventCallbackDelegate.ConnectCallback)OnConnect);
+            
+            connResult.Should().Be(EndPointStatus.Okay);
+            endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
             _callbackArgs.chid.Should().NotBe(IntPtr.Zero);
             _callbackArgs.op.Should().Be(Convergence.IO.EPICS.CA.ConnectionEventCallbackArgs.CA_OP_CONN_UP);
-            connResult.Should().Be(EndPointStatus.Okay);
-           
-            endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
         }
 
         [Test]

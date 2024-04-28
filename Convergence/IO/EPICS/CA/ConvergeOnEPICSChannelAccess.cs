@@ -94,6 +94,9 @@ namespace Convergence.IO.EPICS.CA
                         tcs.SetResult(EcaType.ECA_EVDISALLOW);
                         return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
                     }
+                    // Introduce an artificial delay if callback is not null.
+                    if (connectCallback != null)
+                        Thread.Sleep((int)(EPICS_TIMEOUT_SEC * 1000));
                     // If the callback is null, then we need to explicitly check the state of the channel,
                     // as connection will just return ECA_NORMAL, so an additional check is required.
                     if (connectCallback == null)
