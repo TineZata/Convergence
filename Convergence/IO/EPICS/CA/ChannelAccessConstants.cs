@@ -1,4 +1,4 @@
-﻿namespace Convergence.IO.EPICS
+﻿namespace Convergence.IO.EPICS.CA
 {
 
     internal class ChannelAccessConstants

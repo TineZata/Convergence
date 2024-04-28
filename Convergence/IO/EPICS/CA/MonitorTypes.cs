@@ -1,19 +1,17 @@
-﻿using Convergence.IO.EPICS;
-
-namespace Conversion.IO.EPICS
+﻿namespace Convergence.IO.EPICS.CA
 {
-    [System.Flags]
-    public enum CaMonitorTypes
+    [Flags]
+    public enum MonitorTypes
     {
         MonitorValField = ChannelAccessConstants.DBE_VALUE,
         MonitorOtherFields = ChannelAccessConstants.DBE_PROPERTY,
         MonitorAlarmFields = ChannelAccessConstants.DBE_ALARM,
         MonitorLogFields = ChannelAccessConstants.DBE_LOG,
-        MonitorAllFields = (
+        MonitorAllFields =
           MonitorValField
         | MonitorOtherFields
         | MonitorAlarmFields
         | MonitorLogFields
-        )
+
     }
 }

@@ -2,12 +2,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Convergence;
-using EPICSSettings = Convergence.IO.EPICS.Settings;
-using EPICSDataTypes = Convergence.IO.EPICS.DbFieldType;
-using EPICSCaReadCallback = Convergence.IO.EPICS.CaEventCallbackDelegate.CaReadCallback;
-using System.Net.NetworkInformation;
-using Convergence.IO.EPICS;
-using System.Runtime.InteropServices;
 
 namespace ReadTests
 {
@@ -19,17 +13,17 @@ namespace ReadTests
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
-            var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_ENUM_i16,
+            var epicSettings = new Convergence.IO.EPICS.CA.Settings(
+                                datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_ENUM_i16,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
-            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
+            await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int16 data = -1;
             // Read async and await a callback
-            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+            EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
                 data = (Int16)epicSettings.DecodeEventData(value);
             });
@@ -47,17 +41,17 @@ namespace ReadTests
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVInteger");
-            var epicSettings = new EPICSSettings(
-                                    datatype: EPICSDataTypes.DBF_LONG_i32,
+            var epicSettings = new Convergence.IO.EPICS.CA.Settings(
+                                    datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_LONG_i32,
                                     elementCount: 1,
                                     isServer: false,
                                     isPVA: false);
-            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
+            await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             Int32 data = -5;
             // Read async and await a callback
-            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+            EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
                 data = (Int32)epicSettings.DecodeEventData(value);
             });
@@ -75,17 +69,17 @@ namespace ReadTests
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVFloat");
-            var epicSettings = new EPICSSettings(
-                                datatype: EPICSDataTypes.DBF_FLOAT_f32,
+            var epicSettings = new Convergence.IO.EPICS.CA.Settings(
+                                datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_FLOAT_f32,
                                 elementCount: 1,
                                 isServer: false,
                                 isPVA: false);
-            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
+            await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             float data = -6.1f;
             // Read async and await a callback
-            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+            EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
                 data = (float)epicSettings.DecodeEventData(value);
             });
@@ -103,17 +97,17 @@ namespace ReadTests
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
-            var epicSettings = new EPICSSettings(
-                                    datatype: EPICSDataTypes.DBF_DOUBLE_f64,
+            var epicSettings = new Convergence.IO.EPICS.CA.Settings(
+                                    datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_DOUBLE_f64,
                                     elementCount: 1,
                                     isServer: false,
                                     isPVA: false);
-            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
+            await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             double data = -6.1;
             // Read async and await a callback
-            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+            EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
                 data = (double)epicSettings.DecodeEventData(value);
             });
@@ -131,17 +125,17 @@ namespace ReadTests
         {
             // Create a new connections and then attempt to read the value.
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
-            var epicSettings = new EPICSSettings(
-                                    datatype: EPICSDataTypes.DBF_STRING_s39,
+            var epicSettings = new Convergence.IO.EPICS.CA.Settings(
+                                    datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_STRING_s39,
                                     elementCount: 1,
                                     isServer: false,
                                     isPVA: false);
-            var endPointArgs = new EndPointBase<EPICSSettings> { EndPointID = endPointId, Settings = epicSettings };
-            await ConvergenceInstance.Hub.ConnectAsync(endPointArgs, NullCallBack);
+            var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
+            await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
             string data = "Disconnected";
             // Read async and await a callback
-            EndPointStatus status = await ConvergenceInstance.Hub.ReadAsync<EPICSCaReadCallback>(endPointArgs.EndPointID, (value) =>
+            EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
                 data = (string)epicSettings.DecodeEventData(value);
             });

@@ -6,19 +6,17 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Convergence.IO.EPICS
+namespace Convergence.IO.EPICS.CA
 {
     /// <summary>
-    /// Settings for EPICS protocol.
-    /// 
-    /// EPICS only requires the distintion between CA and PVA.
+    /// Settings for the EPICS Channel Access protocol.
     /// </summary>
     public class Settings : ISettings
     {
         /// <summary>
         /// The channel handle.
         /// </summary>
-        public IntPtr ChannelHandle = IntPtr.Zero;
+        public nint ChannelHandle = nint.Zero;
         /// <summary>
         /// True if the protocol is PVA.
         /// </summary>
@@ -44,17 +42,17 @@ namespace Convergence.IO.EPICS
         /// <summary>
         /// Description of the PV.
         /// </summary>
-        string ? Description { get; set; }
+        string? Description { get; set; }
 
         /// <summary>
         /// Pointer to the monitor handle.
         /// </summary>
-        public IntPtr MonitorHandle  = IntPtr.Zero;
+        public nint MonitorHandle = nint.Zero;
 
         /// <summary>
         /// Pointer to the write handle.
         /// 
-        public IntPtr WriteHandle = IntPtr.Zero;
+        public nint WriteHandle = nint.Zero;
 
 
         public Settings(DbFieldType datatype, bool isServer, int elementCount, bool isPVA)
@@ -70,12 +68,12 @@ namespace Convergence.IO.EPICS
         {
             object data = null;
             Enum.TryParse<DbFieldType>(args.type.ToString(), out var type);
-            switch(type)
+            switch (type)
             {
                 // Decode data for and BDF_SHORT_i16
                 case DbFieldType.DBF_SHORT_i16:
                 case DbFieldType.DBF_ENUM_i16:
-                    Int16[] shortArray = new Int16[args.count];
+                    short[] shortArray = new short[args.count];
                     Marshal.Copy(args.dbr, shortArray, 0, args.count);
                     if (shortArray.Length == 1)
                     {
@@ -88,7 +86,7 @@ namespace Convergence.IO.EPICS
                     return data;
                 // Decode data for and DBF_LONG_i32
                 case DbFieldType.DBF_LONG_i32:
-                    Int32[] longArray = new Int32[args.count];
+                    int[] longArray = new int[args.count];
                     Marshal.Copy(args.dbr, longArray, 0, args.count);
                     if (longArray.Length == 1)
                     {
