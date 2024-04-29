@@ -1,7 +1,4 @@
-﻿//
-// DllFunctions.cs
-//
-
+﻿
 using System;
 using System.Runtime.InteropServices;
 using FluentAssertions;
@@ -10,7 +7,7 @@ using static Convergence.IO.EPICS.CA.EventCallbackDelegate;
 namespace Convergence.IO.EPICS.CA
 {
 
-    internal static class ChannelAccessDLLWrapper
+    internal static class ChannelAccessWrapper
     {
 
         //
@@ -45,7 +42,7 @@ namespace Convergence.IO.EPICS.CA
         // seem to get called, so maybe that was just bad luck :)
         //
 
-        static ChannelAccessDLLWrapper()
+        static ChannelAccessWrapper()
         {
         }
 
