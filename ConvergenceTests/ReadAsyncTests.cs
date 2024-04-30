@@ -15,9 +15,7 @@ namespace ReadTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                 datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_ENUM_i16,
-                                elementCount: 1,
-                                isServer: false,
-                                isPVA: false);
+                                elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
@@ -43,9 +41,7 @@ namespace ReadTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVInteger");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                     datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_LONG_i32,
-                                    elementCount: 1,
-                                    isServer: false,
-                                    isPVA: false);
+                                    elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
@@ -71,9 +67,7 @@ namespace ReadTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVFloat");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                 datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_FLOAT_f32,
-                                elementCount: 1,
-                                isServer: false,
-                                isPVA: false);
+                                elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
@@ -99,9 +93,7 @@ namespace ReadTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                     datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_DOUBLE_f64,
-                                    elementCount: 1,
-                                    isServer: false,
-                                    isPVA: false);
+                                    elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             
@@ -127,9 +119,7 @@ namespace ReadTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                     datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_STRING_s39,
-                                    elementCount: 1,
-                                    isServer: false,
-                                    isPVA: false);
+                                    elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             

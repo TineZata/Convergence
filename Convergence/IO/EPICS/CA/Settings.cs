@@ -18,17 +18,6 @@ namespace Convergence.IO.EPICS.CA
         /// </summary>
         public nint ChannelHandle = nint.Zero;
         /// <summary>
-        /// True if the protocol is PVA.
-        /// </summary>
-        public bool IsPVA { get; set; }
-
-        /// <summary>
-        /// True if the protocol is server.
-        /// A server would contain db records, while a client would not.
-        /// </summary>
-        public bool IsServer { get; set; }
-
-        /// <summary>
         /// The data type.
         /// </summary>
         public DbFieldType DataType { get; set; }
@@ -55,12 +44,10 @@ namespace Convergence.IO.EPICS.CA
         public nint WriteHandle = nint.Zero;
 
 
-        public Settings(DbFieldType datatype, bool isServer, int elementCount, bool isPVA)
+        public Settings(DbFieldType datatype, int elementCount)
         {
             DataType = datatype;
-            IsServer = isServer;
             ElementCount = elementCount;
-            IsPVA = isPVA;
         }
 
         // Decode EPICS data according to the data type.

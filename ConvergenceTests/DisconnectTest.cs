@@ -18,9 +18,7 @@ namespace DisconnectTests
             var endPointId1 = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings1 = new Convergence.IO.EPICS.CA.Settings(
                                 datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_SHORT_i16,
-                                elementCount: 1,
-                                isServer: false,
-                                isPVA: false);
+                                elementCount: 1);
             var endPointArgs1 = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId1, Settings = epicSettings1 };
             Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs1, NullCallBack);
             endPointArgs1.EndPointID.UniqueId .Should().NotBe(Guid.Empty);
@@ -31,9 +29,7 @@ namespace DisconnectTests
             var endPointId2 = new EndPointID(Protocols.EPICS_CA, "Test:PVBoolean");
             var epicSettings2 = new Convergence.IO.EPICS.CA.Settings(
                                 datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_SHORT_i16,
-                                elementCount: 1,
-                                isServer: false,
-                                isPVA: false);
+                                elementCount: 1);
             var endPointArgs2 = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId2, Settings = epicSettings2 };
             // Calling Connect again with the same EndPointID should return a different Guid.
             Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs2, NullCallBack);
@@ -47,9 +43,7 @@ namespace DisconnectTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVInteger");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                     datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_LONG_i32,
-                                    elementCount: 1,
-                                    isServer: false,
-                                    isPVA: false);
+                                    elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
@@ -64,9 +58,7 @@ namespace DisconnectTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVFloat");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                     datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_FLOAT_f32,
-                                    elementCount: 1,
-                                    isServer: false,
-                                    isPVA: false);
+                                    elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
@@ -82,9 +74,7 @@ namespace DisconnectTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVDouble");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                     datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_DOUBLE_f64,
-                                    elementCount: 1,
-                                    isServer: false,
-                                    isPVA: false);
+                                    elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
@@ -100,9 +90,7 @@ namespace DisconnectTests
             var endPointId = new EndPointID(Protocols.EPICS_CA, "Test:PVString");
             var epicSettings = new Convergence.IO.EPICS.CA.Settings(
                                     datatype: Convergence.IO.EPICS.CA.DbFieldType.DBF_STRING_s39,
-                                    elementCount: 1,
-                                    isServer: false,
-                                    isPVA: false);
+                                    elementCount: 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endPointId, Settings = epicSettings };
             Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
