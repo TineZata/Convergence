@@ -119,5 +119,28 @@ namespace Convergence.IO.EPICS.CA
             }
             return data;
         }
+
+        static public DbFieldType GetDBFieldType(Type sType)
+        {
+            switch (sType) 
+            {
+                case Type type when type == typeof(bool):
+                case Type t when t == typeof(Enum):
+                    return DbFieldType.DBF_ENUM_i16;
+                case Type t when t == typeof(byte):
+                    return DbFieldType.DBF_CHAR_byte;
+                case Type t when t == typeof(short):
+                    return DbFieldType.DBF_SHORT_i16;
+                case Type t when t == typeof(int):
+                    return DbFieldType.DBF_LONG_i32;
+                case Type t when t == typeof(float):
+                    return DbFieldType.DBF_FLOAT_f32;
+                case Type t when t == typeof(double):
+                    return DbFieldType.DBF_DOUBLE_f64;
+                case Type t when t == typeof(string):
+                default:
+                    return DbFieldType.DBF_STRING_s39;
+            }
+        }
     }
 }
