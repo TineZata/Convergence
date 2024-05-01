@@ -129,7 +129,7 @@ namespace Convergence.IO.EPICS.CA
         /// <exception cref="InvalidCastException"></exception>
         public static EcaType ca_context_create(PreemptiveCallbacks preemptive)
         {
-            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_context_create(preemptive)).ToString(), out EcaType result))
+            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_context_create(preemptive)).ToString(), out EcaType result))
             {
                 return result;
             }
