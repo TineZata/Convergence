@@ -4,6 +4,7 @@ using FluentAssertions;
 using Convergence;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using Convergence.IO.EPICS.CA;
 
 namespace WriteTests
 {
@@ -32,7 +33,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (Int16)epicSettings.DecodeEventData(value);
+                        var data = (Int16)Helpers.DecodeEventData(value);
                         data.Should().Be(testValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -73,7 +74,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (Int32)epicSettings.DecodeEventData(value);
+                        var data = (Int32)Helpers.DecodeEventData(value);
                         data.Should().Be(testValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -114,7 +115,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (float)epicSettings.DecodeEventData(value);
+                        var data = (float)Helpers.DecodeEventData(value);
                         data.Should().Be(testValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -155,7 +156,7 @@ namespace WriteTests
                     // Read the value back to verify the write
                     var readStatus = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
                     {
-                        var data = (double)epicSettings.DecodeEventData(value);
+                        var data = (double)Helpers.DecodeEventData(value);
                         data.Should().Be(double.MaxValue);
                     });
                     readStatus.Result.Should().Be(EndPointStatus.Okay);
@@ -193,7 +194,7 @@ namespace WriteTests
                 // Read the value back to verify the write
                 var readStatus = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
                 {
-                    var data = (string)epicSettings.DecodeEventData(value);
+                    var data = (string)Helpers.DecodeEventData(value);
                     data.Should().Be(testValue);
                 });
                 readStatus.Result.Should().Be(EndPointStatus.Okay);

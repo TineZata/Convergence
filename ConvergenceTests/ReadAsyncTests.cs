@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using Convergence;
+using Convergence.IO.EPICS.CA;
 
 namespace ReadTests
 {
@@ -23,7 +24,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (Int16)epicSettings.DecodeEventData(value);
+                data = (Int16)Helpers.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -49,7 +50,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (Int32)epicSettings.DecodeEventData(value);
+                data = (Int32)Helpers.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -75,7 +76,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (float)epicSettings.DecodeEventData(value);
+                data = (float)Helpers.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -101,7 +102,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (double)epicSettings.DecodeEventData(value);
+                data = (double)Helpers.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
@@ -127,7 +128,7 @@ namespace ReadTests
             // Read async and await a callback
             EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endPointArgs.EndPointID, (value) =>
             {
-                data = (string)epicSettings.DecodeEventData(value);
+                data = (string)Helpers.DecodeEventData(value);
             });
             if (status == EndPointStatus.Disconnected)
             {
