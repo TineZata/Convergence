@@ -177,7 +177,7 @@ namespace Convergence.IO.EPICS.CA
                     return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
                 }
                 var epicsSettings = _epics_ca_connections[endPointID];
-                if (epicsSettings.ChannelHandle == IntPtr.Zero)
+                if (epicsSettings.ChannelHandle == nint.Zero)
                 {
                     tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                     return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
@@ -238,7 +238,7 @@ namespace Convergence.IO.EPICS.CA
                 else
                 {
                     var epicsSettings = _epics_ca_connections[endPointID];
-                    if (epicsSettings.ChannelHandle == IntPtr.Zero)
+                    if (epicsSettings.ChannelHandle == nint.Zero)
                     {
                         tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                         return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
@@ -279,7 +279,7 @@ namespace Convergence.IO.EPICS.CA
             var cb = callback as WriteCallback;
             var tcs = new TaskCompletionSource<EcaType>();
             // If the pvalue, don't bother trying to write.
-            if (pvalue == IntPtr.Zero)
+            if (pvalue == nint.Zero)
             {
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
@@ -292,7 +292,7 @@ namespace Convergence.IO.EPICS.CA
             else
             {
                 var epicsSettings = _epics_ca_connections[endPointID];
-                if (epicsSettings.ChannelHandle == IntPtr.Zero)
+                if (epicsSettings.ChannelHandle == nint.Zero)
                 {
                     tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                     return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));

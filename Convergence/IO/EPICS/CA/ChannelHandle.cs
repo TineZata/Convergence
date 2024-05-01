@@ -23,7 +23,7 @@
 
         public void SetAsNull() => Value = nint.Zero;
 
-        // public static readonly ChannelHandle Zero = new(System.IntPtr.Zero) ;
+        // public static readonly ChannelHandle Zero = new(System.nint.Zero) ;
 
         public static implicit operator nint(ChannelHandle channel)
 

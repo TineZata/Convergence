@@ -30,7 +30,7 @@ namespace ConnectTests
             
             connResult.Should().Be(EndPointStatus.Okay);
             endPointArgs.EndPointID.UniqueId.Should().NotBe(Guid.Empty);
-            _callbackArgs.chid.Should().NotBe(IntPtr.Zero);
+            _callbackArgs.chid.Should().NotBe(nint.Zero);
             _callbackArgs.op.Should().Be(Convergence.IO.EPICS.CA.ConnectionEventCallbackArgs.CA_OP_CONN_UP);
         }
 

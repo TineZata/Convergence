@@ -38,13 +38,13 @@ namespace SubscriptionTests
                 try
                 {
                     // Ensure the PV is set to 0
-                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
+                    nint valuePtr0 = handle0.AddrOfPinnedObject();
                     // Do a write to the PV to trigger the subscription
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(0);
                     // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
-                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
+                    nint valuePtr1 = handle1.AddrOfPinnedObject();
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(1);
@@ -90,13 +90,13 @@ namespace SubscriptionTests
                 try
                 {
                     // Ensure the PV is set to 0
-                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
+                    nint valuePtr0 = handle0.AddrOfPinnedObject();
                     // Do a write to the PV to trigger the subscription
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(15);
                     // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
-                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
+                    nint valuePtr1 = handle1.AddrOfPinnedObject();
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(-5);
@@ -141,13 +141,13 @@ namespace SubscriptionTests
                 try
                 {
                     // Ensure the PV is set to 0
-                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
+                    nint valuePtr0 = handle0.AddrOfPinnedObject();
                     // Do a write to the PV to trigger the subscription
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(15.0f);
                     // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
-                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
+                    nint valuePtr1 = handle1.AddrOfPinnedObject();
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(-5.5f);
@@ -191,13 +191,13 @@ namespace SubscriptionTests
                 try
                 {
                     // Ensure the PV is set to 0
-                    IntPtr valuePtr0 = handle0.AddrOfPinnedObject();
+                    nint valuePtr0 = handle0.AddrOfPinnedObject();
                     // Do a write to the PV to trigger the subscription
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(double.MaxValue);
                     // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
-                    IntPtr valuePtr1 = handle1.AddrOfPinnedObject();
+                    nint valuePtr1 = handle1.AddrOfPinnedObject();
                     await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
                     Task.Delay(100).Wait();
                     data.Should().Be(double.MinValue);
@@ -237,13 +237,13 @@ namespace SubscriptionTests
             else
             {
                 // Ensure the PV is set to 0
-                IntPtr valuePtr0 = Marshal.StringToHGlobalAnsi("Ahoy, world");
+                nint valuePtr0 = Marshal.StringToHGlobalAnsi("Ahoy, world");
                 // Do a write to the PV to trigger the subscription
                 await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr0, null);
                 Task.Delay(100).Wait();
                 data.Should().Be("Ahoy, world");
                 // Now write 1 to the PV... this way we ensure that the subscription is called at least once.
-                IntPtr valuePtr1 = Marshal.StringToHGlobalAnsi("I'm a string.");
+                nint valuePtr1 = Marshal.StringToHGlobalAnsi("I'm a string.");
                 await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr1, null);
                 Task.Delay(100).Wait();
                 data.Should().Be("I'm a string.");

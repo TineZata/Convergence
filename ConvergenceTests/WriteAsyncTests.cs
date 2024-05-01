@@ -25,7 +25,7 @@ namespace WriteTests
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
             try
             {
-                IntPtr valuePtr = handle.AddrOfPinnedObject();
+                nint valuePtr = handle.AddrOfPinnedObject();
                 // Write async and await a callback
                 EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
                 {
@@ -66,7 +66,7 @@ namespace WriteTests
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
             try
             {
-                IntPtr valuePtr = handle.AddrOfPinnedObject();
+                nint valuePtr = handle.AddrOfPinnedObject();
                 // Write async and await a callback
                 EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
                 {
@@ -107,7 +107,7 @@ namespace WriteTests
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
             try
             {
-                IntPtr valuePtr = handle.AddrOfPinnedObject();
+                nint valuePtr = handle.AddrOfPinnedObject();
                 // Write async and await a callback
                 EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
                 {
@@ -148,7 +148,7 @@ namespace WriteTests
             GCHandle handle = GCHandle.Alloc(testValue, GCHandleType.Pinned);
             try
             {
-                IntPtr valuePtr = handle.AddrOfPinnedObject();
+                nint valuePtr = handle.AddrOfPinnedObject();
                 // Write async and await a callback
                 EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
                 {
@@ -186,7 +186,7 @@ namespace WriteTests
             await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, NullCallBack);
 
             string testValue = "Hello, World!";
-            IntPtr valuePtr = Marshal.StringToHGlobalAnsi(testValue);
+            nint valuePtr = Marshal.StringToHGlobalAnsi(testValue);
             // Write async and await a callback
             EndPointStatus status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endPointArgs.EndPointID, valuePtr, (_) =>
             {

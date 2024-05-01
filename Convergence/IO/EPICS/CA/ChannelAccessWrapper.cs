@@ -98,7 +98,7 @@ namespace Convergence.IO.EPICS.CA
                     throw new Exception("CurrentContext is not equal to context", ex);
                 }
             }
-            // else if CurrentContext is not IntPtr.Zero but not equal to context
+            // else if CurrentContext is not nint.Zero but not equal to context
             else if (CurrentContext != ca_current_context())
             {
                 // Destroy the CurrentContext
@@ -291,7 +291,7 @@ namespace Convergence.IO.EPICS.CA
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_host_name
             static extern nint ca_host_name(nint pChanID);
             // [DllImport(CA_DLL_path)]
-            // static extern uint ca_get_host_name ( IntPtr pChanID, IntPtr pBuffer, uint nBufferBytesAllocated ) ;
+            // static extern uint ca_get_host_name ( nint pChanID, nint pBuffer, uint nBufferBytesAllocated ) ;
         }
 
         // -----------
