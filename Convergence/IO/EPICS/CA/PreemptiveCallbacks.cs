@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Convergence.IO.EPICS
+namespace Convergence.IO.EPICS.CA
 {
     public enum PreemptiveCallbacks
     {

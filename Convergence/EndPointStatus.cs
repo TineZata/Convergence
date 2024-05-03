@@ -15,6 +15,7 @@ namespace Convergence
         NoReadAccess,
         NoWriteAccess,
         UnknownError,
+        InvaildProtocol,
         Okay,
     }
 }

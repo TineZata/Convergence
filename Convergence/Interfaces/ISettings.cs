@@ -9,5 +9,7 @@ namespace Convergence.Interfaces
 {
     public interface ISettings
     {
+        // Placeholder for future settings.
+        // At the moment it is useful for maintaining a concurrent dictionary of end points with different settings.
     }
 }

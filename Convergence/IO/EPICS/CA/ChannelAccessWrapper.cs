@@ -1,17 +1,13 @@
-﻿//
-// DllFunctions.cs
-//
-
+﻿
 using System;
 using System.Runtime.InteropServices;
-using Conversion.IO.EPICS;
 using FluentAssertions;
-using static Convergence.IO.EPICS.CaEventCallbackDelegate;
+using static Convergence.IO.EPICS.CA.EventCallbackDelegate;
 
-namespace Convergence.IO.EPICS
+namespace Convergence.IO.EPICS.CA
 {
 
-    internal static class ChannelAccessDLLWrapper
+    internal static class ChannelAccessWrapper
     {
 
         //
@@ -46,7 +42,7 @@ namespace Convergence.IO.EPICS
         // seem to get called, so maybe that was just bad luck :)
         //
 
-        static ChannelAccessDLLWrapper()
+        static ChannelAccessWrapper()
         {
         }
 
@@ -72,7 +68,7 @@ namespace Convergence.IO.EPICS
         // DEFINITELY WORTH A TRY.
         // 
 
-        private const string CA_DLL_NAME = ("IO\\EPICS\\CA");
+        private const string CA_DLL_NAME = "IO\\EPICS\\CA\\CA";
 
         //
         // Most of the API calls return an integer 'ECA' code.
@@ -82,15 +78,15 @@ namespace Convergence.IO.EPICS
         // CONTEXT
         // -------
 
-        public static IntPtr CurrentContext { get; private set; }
+        public static nint CurrentContext { get; private set; }
 
         private static void set_current_context()
         {
             var context = ca_current_context();
             // Check if CurrentContext has been created
-            if (CurrentContext == IntPtr.Zero)
+            if (CurrentContext == nint.Zero)
             {
-                ca_attach_context(context);
+                context.ca_attach_context();
                 // Check if CurrentContext has been created
                 CurrentContext = ca_current_context();
                 try
@@ -102,7 +98,7 @@ namespace Convergence.IO.EPICS
                     throw new Exception("CurrentContext is not equal to context", ex);
                 }
             }
-            // else if CurrentContext is not IntPtr.Zero but not equal to context
+            // else if CurrentContext is not nint.Zero but not equal to context
             else if (CurrentContext != ca_current_context())
             {
                 // Destroy the CurrentContext
@@ -149,26 +145,26 @@ namespace Convergence.IO.EPICS
             //   ECA_NOTTHREADED - Current thread is already a member
             //                     of a non-preemptive callback CA context
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_context_create
-            
+
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_current_context
-            static extern Int32 ca_context_create(PreemptiveCallbacks p);
+            static extern int ca_context_create(PreemptiveCallbacks p);
 
         }
 
         // Needed when you invoke a 'ca_' function on a worker thread
 
-        public static IntPtr ca_current_context()
+        public static nint ca_current_context()
         {
             return new(ca_current_context());
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_current_context
-            static extern IntPtr ca_current_context();
+            static extern nint ca_current_context();
         }
 
-        public static EcaType ca_attach_context(this IntPtr context)
+        public static EcaType ca_attach_context(this nint context)
         {
             // Try Parse Enum of type <EcaType> from Int32 return by (ca_attach_context(context))
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_attach_context(context)).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_attach_context(context)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -178,7 +174,7 @@ namespace Convergence.IO.EPICS
             }
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_attach_context
-            static extern Int32 ca_attach_context(IntPtr pClientContext);
+            static extern int ca_attach_context(nint pClientContext);
         }
 
         public static void ca_detach_context()
@@ -206,15 +202,15 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_create_channel(
           string channelName,
-          CaConnectCallback? connectionCallback,
-          out IntPtr pChannel
+          ConnectCallback? connectionCallback,
+          out nint pChannel
         )
         {
             set_current_context();
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_create_channel(
-                channelName, 
-                connectionCallback, 
-                IntPtr.Zero,
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_create_channel(
+                channelName,
+                connectionCallback,
+                nint.Zero,
                 ChannelAccessConstants.CA_PRIORITY_DEFAULT,
                 out pChannel
             )).ToString(), out EcaType result
@@ -241,18 +237,18 @@ namespace Convergence.IO.EPICS
             // For more information, see the HandleRef Sample and GCHandle Sample.
             // https://docs.microsoft.com/en-us/dotnet/framework/interop/marshaling-a-delegate-as-a-callback-method
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_create_channel
-            static extern Int32 ca_create_channel(
+            static extern int ca_create_channel(
               string pChanName,
-              CaConnectCallback? pConnStateCallback,
-              IntPtr pUserPrivate, // can be fetched later by ca_puser() ; passed in 'ConnectCallback'
-              UInt32 priority,     // priority level in the server 0 - 100 // put in SETTINGS ???
-              out IntPtr pChannel // was 'ref'
+              ConnectCallback? pConnStateCallback,
+              nint pUserPrivate, // can be fetched later by ca_puser() ; passed in 'ConnectCallback'
+              uint priority,     // priority level in the server 0 - 100 // put in SETTINGS ???
+              out nint pChannel // was 'ref'
             );
         }
 
-        public static EcaType ca_clear_channel(IntPtr pChanID)
+        public static EcaType ca_clear_channel(nint pChanID)
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_clear_channel(pChanID)).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_clear_channel(pChanID)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -260,7 +256,7 @@ namespace Convergence.IO.EPICS
             {
                 throw new InvalidCastException("ca_clear_channel: Unable to cast EcaType from Int32");
             }
-            
+
             [DllImport(CA_DLL_NAME)]
             // Shutdown and reclaim resources associated with
             // a channel created by ca_create_channel().
@@ -268,23 +264,23 @@ namespace Convergence.IO.EPICS
             //   ECA_NORMAL - Normal successful completion
             //   ECA_BADCHID - Corrupted CHID
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_clear_channel
-            static extern Int32 ca_clear_channel(IntPtr pChanID);
+            static extern int ca_clear_channel(nint pChanID);
         }
 
         // -------------
         // CHANNEL STATE
         // -------------
 
-        public static ChannelState ca_state(IntPtr pChanID)
+        public static ChannelState ca_state(nint pChanID)
         {
             return ca_state(pChanID);
             [DllImport(CA_DLL_NAME)]
             // Returns an enumerated type indicating the current state of the specified IO channel.
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_state
-            static extern ChannelState ca_state(IntPtr pChanID);
+            static extern ChannelState ca_state(nint pChanID);
         }
 
-        public static string ca_host_name(IntPtr pChanID)
+        public static string ca_host_name(nint pChanID)
         {
             return Marshal.PtrToStringAnsi(
               ca_host_name(pChanID)
@@ -293,9 +289,9 @@ namespace Convergence.IO.EPICS
             // BETTER TO USE 'ca_get_host_name' !!!!!!
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_host_name
-            static extern IntPtr ca_host_name(IntPtr pChanID);
+            static extern nint ca_host_name(nint pChanID);
             // [DllImport(CA_DLL_path)]
-            // static extern uint ca_get_host_name ( IntPtr pChanID, IntPtr pBuffer, uint nBufferBytesAllocated ) ;
+            // static extern uint ca_get_host_name ( nint pChanID, nint pBuffer, uint nBufferBytesAllocated ) ;
         }
 
         // -----------
@@ -303,17 +299,17 @@ namespace Convergence.IO.EPICS
         // -----------
 
         public unsafe static EcaType ca_array_get(
-          this IntPtr pChanID,
+          this nint pChanID,
           DbFieldType dbrType,
           int nElementsOfThatTypeWanted,
-          IntPtr pMemoryAllocatedToHoldDbrStruct
+          nint pMemoryAllocatedToHoldDbrStruct
         )
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_get(
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_array_get(
               (short)dbrType,
               (uint)nElementsOfThatTypeWanted,
               pChanID,
-              (System.IntPtr)pMemoryAllocatedToHoldDbrStruct
+              pMemoryAllocatedToHoldDbrStruct
             )).ToString(), out EcaType result))
             {
                 return result;
@@ -340,38 +336,38 @@ namespace Convergence.IO.EPICS
             //  ECA_DISCONN    - Channel is disconnected
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_array_get
             static extern int ca_array_get(
-              Int16 type,
-              UInt32 count,
-              IntPtr pChanID,
-              IntPtr pValue
+              short type,
+              uint count,
+              nint pChanID,
+              nint pValue
             );
         }
 
         public static EcaType ca_array_get_callback(
-          this IntPtr pChanID,
+          this nint pChanID,
           DbFieldType type,
           int nElements,
-          CaReadCallback valueUpdateCallBack
+          ReadCallback valueUpdateCallBack
         )
         {
             // Check that the channel is connected
             if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
             // Check that write access is allowed
-            if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
+            if (!pChanID.ca_read_access()) return EcaType.ECA_NORDACCESS;
             // Check that the data type is valid
-            var returnedType = ca_field_type(pChanID);
+            var returnedType = pChanID.ca_field_type();
             // If user defined type is DbFieldType.DBF_FLOAT_f32 the the return type can either be DBR_FLOAT or DBR_DOUBLE.
             // Actually I've never observer a float type being returned, however this is possible according to the EPICS documentation when 
             // PREC is set to the correct value.
-            bool isFloat = (type == DbFieldType.DBF_FLOAT_f32) && ((returnedType == (Int16)DbFieldType.DBF_FLOAT_f32) || returnedType == (Int16)DbFieldType.DBF_DOUBLE_f64);
-            if (((Int16)type) != returnedType && !isFloat)
-                return EcaType.ECA_BADTYPE; 
+            bool isFloat = type == DbFieldType.DBF_FLOAT_f32 && (returnedType == (short)DbFieldType.DBF_FLOAT_f32 || returnedType == (short)DbFieldType.DBF_DOUBLE_f64);
+            if ((short)type != returnedType && !isFloat)
+                return EcaType.ECA_BADTYPE;
             // assign userArg to ca_puser(pChanID)
-            var userArg = ca_puser(pChanID);
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(
+            var userArg = pChanID.ca_puser();
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(
                 ca_array_get_callback(
-                  (Int16)type,
-                  (UInt32)nElements,
+                  (short)type,
+                  (uint)nElements,
                   pChanID,
                   valueUpdateCallBack,
                   userArg)
@@ -404,11 +400,11 @@ namespace Convergence.IO.EPICS
             // https://docs.microsoft.com/en-us/dotnet/framework/interop/marshaling-a-delegate-as-a-callback-method
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_array_get_callback
             static extern int ca_array_get_callback(
-              Int16 type,
-              UInt32 count,
-              IntPtr pChanID,
-              CaReadCallback pEventCallBack,
-              IntPtr userArg
+              short type,
+              uint count,
+              nint pChanID,
+              ReadCallback pEventCallBack,
+              nint userArg
             );
         }
 
@@ -418,17 +414,17 @@ namespace Convergence.IO.EPICS
         // THE AVAILABLE NUMBER OF ELEMENTS ...
 
         public static unsafe EcaType ca_array_put(
-          this IntPtr pChanID,
+          this nint pChanID,
           DbFieldType dbrType,
           int nElements,
-          IntPtr pValueToWrite // New channel value is copied from here
+          nint pValueToWrite // New channel value is copied from here
         )
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put(
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_array_put(
               (short)dbrType,
               (uint)nElements,
               pChanID,
-              (IntPtr)pValueToWrite   // New channel value is copied from here
+              pValueToWrite   // New channel value is copied from here
             )).ToString(), out EcaType result))
             {
                 return result;
@@ -450,11 +446,11 @@ namespace Convergence.IO.EPICS
             //   ECA_ALLOCMEM   - Unable to allocate memory
             //   ECA_DISCONN    - Channel is disconnected
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_array_put
-            static extern Int32 ca_array_put(
-              Int16 type,
-              UInt32 count,
-              IntPtr pchanID,
-              IntPtr pValue   // New channel value is copied from here
+            static extern int ca_array_put(
+              short type,
+              uint count,
+              nint pchanID,
+              nint pValue   // New channel value is copied from here
             );
         }
 
@@ -465,34 +461,34 @@ namespace Convergence.IO.EPICS
         // THE AVAILABLE NUMBER OF ELEMENTS ...
 
         public unsafe static EcaType ca_array_put_callback(
-          this IntPtr pChanID,
+          this nint pChanID,
           DbFieldType dbrType,
           int nElements,
-          IntPtr ptrValueToWrite,       
-          CaWriteCallback writeCallback // Event will be raised when successful write is confirmed
+          nint ptrValueToWrite,
+          WriteCallback writeCallback // Event will be raised when successful write is confirmed
         )
         {
             // Check that the channel is connected
             if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
             // Check that write access is allowed
-            if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
+            if (!pChanID.ca_read_access()) return EcaType.ECA_NORDACCESS;
             // Check that the data type is valid
-            var returnedType = ca_field_type(pChanID);
+            var returnedType = pChanID.ca_field_type();
             // assign userArg to ca_puser(pChanID)
             // If user defined type is DbFieldType.DBF_FLOAT_f32 the the return type can either be DBR_FLOAT or DBR_DOUBLE.
             // Actually I've never observer a float type being returned, however this is possible according to the EPICS documentation when 
             // PREC is set to the correct value.
-            bool isFloat = (dbrType == DbFieldType.DBF_FLOAT_f32) && ((returnedType == (Int16)DbFieldType.DBF_FLOAT_f32) || returnedType == (Int16)DbFieldType.DBF_DOUBLE_f64);
-            if (((Int16)dbrType) != returnedType && !isFloat)
+            bool isFloat = dbrType == DbFieldType.DBF_FLOAT_f32 && (returnedType == (short)DbFieldType.DBF_FLOAT_f32 || returnedType == (short)DbFieldType.DBF_DOUBLE_f64);
+            if ((short)dbrType != returnedType && !isFloat)
                 return EcaType.ECA_BADTYPE;
-            
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_array_put_callback(
-              (Int16)dbrType,
+
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_array_put_callback(
+              (short)dbrType,
               (uint)nElements,
               pChanID,
-              (IntPtr)ptrValueToWrite, // New value is copied from here
+              ptrValueToWrite, // New value is copied from here
               writeCallback, // Event will be raised when successful write is confirmed
-              (IntPtr)ca_puser(pChanID)
+              pChanID.ca_puser()
             )).ToString(), out EcaType result))
             {
                 return result;
@@ -526,13 +522,13 @@ namespace Convergence.IO.EPICS
             // For more information, see the HandleRef Sample and GCHandle Sample.
             // https://docs.microsoft.com/en-us/dotnet/framework/interop/marshaling-a-delegate-as-a-callback-method
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_array_put_callback
-            static extern Int32 ca_array_put_callback(
-              Int16 type,
-              UInt32 count,
-              IntPtr pchanID,
-              IntPtr pValue,         // New value is copied from here
-              CaWriteCallback pEventCallBack, // Event will be raised when successful write is confirmed
-              IntPtr userArg
+            static extern int ca_array_put_callback(
+              short type,
+              uint count,
+              nint pchanID,
+              nint pValue,         // New value is copied from here
+              WriteCallback pEventCallBack, // Event will be raised when successful write is confirmed
+              nint userArg
             );
         }
 
@@ -541,29 +537,29 @@ namespace Convergence.IO.EPICS
         // -------------
 
         public unsafe static EcaType ca_create_subscription(
-          this IntPtr pChanID,
+          this nint pChanID,
           DbFieldType dbrType,
           int count,
-          CaMonitorTypes? whichFieldsToMonitor,
-          CaMonitorCallback valueUpdateCallback,
-          out IntPtr pEvid
+          MonitorTypes? whichFieldsToMonitor,
+          MonitorCallback valueUpdateCallback,
+          out nint pEvid
         )
         {
-            pEvid = IntPtr.Zero;
+            pEvid = nint.Zero;
             // Check that the channel is connected
             if (ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
             // Check that read access is allowed
-            if (!ca_read_access(pChanID)) return EcaType.ECA_NORDACCESS;
+            if (!pChanID.ca_read_access()) return EcaType.ECA_NORDACCESS;
             // assign userArg to ca_puser(pChanID)
-            var userArg = ca_puser(pChanID);
-            whichFieldsToMonitor ??= CaMonitorTypes.MonitorValField;
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_create_subscription(
+            var userArg = pChanID.ca_puser();
+            whichFieldsToMonitor ??= MonitorTypes.MonitorValField;
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_create_subscription(
               (short)dbrType,
               (uint)count,
               pChanID,
               (uint)whichFieldsToMonitor,
               valueUpdateCallback,
-              (System.IntPtr)userArg,
+              userArg,
               out pEvid
             )).ToString(), out EcaType result))
             {
@@ -590,20 +586,20 @@ namespace Convergence.IO.EPICS
             //   ECA_ALLOCMEM - Unable to allocate memory
             //   ECA_ADDFAIL  - A local database event add failed
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_add_event
-            static extern Int32 ca_create_subscription(
-              Int16 dbrType,
-              UInt32 count,
-              IntPtr pChanID,
+            static extern int ca_create_subscription(
+              short dbrType,
+              uint count,
+              nint pChanID,
               uint mask,
-              CaMonitorCallback pEventCallBack,
-              IntPtr userArg,
-              out IntPtr pEvid
+              MonitorCallback pEventCallBack,
+              nint userArg,
+              out nint pEvid
             );
         }
 
-        public static EcaType ca_clear_subscription(this IntPtr pChanID)
+        public static EcaType ca_clear_subscription(this nint pChanID)
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_clear_subscription(pChanID)).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_clear_subscription(pChanID)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -617,7 +613,7 @@ namespace Convergence.IO.EPICS
             //   ECA_NORMAL   - Normal successful completion
             //   ECA_BADCHID  - Corrupted CHID
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_clear_subscription
-            static extern Int32 ca_clear_subscription(IntPtr pEvid);
+            static extern int ca_clear_subscription(nint pEvid);
         }
 
         // ------------
@@ -626,7 +622,7 @@ namespace Convergence.IO.EPICS
 
         public static EcaType ca_flush_io()
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_flush_io()).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_flush_io()).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -639,13 +635,13 @@ namespace Convergence.IO.EPICS
             // Returns
             //   ECA_NORMAL - Normal successful completion
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_flush_io
-            static extern Int32 ca_flush_io();
+            static extern int ca_flush_io();
         }
 
 
         public static EcaType ca_pend_io(double timeOut_secs_zeroMeansInfinite)
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_pend_io(timeOut_secs_zeroMeansInfinite)).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_pend_io(timeOut_secs_zeroMeansInfinite)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -653,7 +649,7 @@ namespace Convergence.IO.EPICS
             {
                 throw new InvalidCastException("ca_pend_io: Unable to cast EcaType from Int32");
             }
-            
+
             [DllImport(CA_DLL_NAME)]
             // Flushes the send buffer and then blocks until outstanding ca_get() requests complete.
             // Returns
@@ -661,12 +657,12 @@ namespace Convergence.IO.EPICS
             //   ECA_TIMEOUT - Selected IO requests didn't complete before specified timeout
             //   ECA_EVDISALLOW - Function inappropriate for use within an event handler
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_pend_io
-            static extern Int32 ca_pend_io(double timeOut_secs_zeroMeansInfinite);
+            static extern int ca_pend_io(double timeOut_secs_zeroMeansInfinite);
         }
 
         public static EcaType ca_test_io()
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_test_io()).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_test_io()).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -680,13 +676,13 @@ namespace Convergence.IO.EPICS
             //   ECA_IODONE       - All IO operations completed
             //   ECA_IOINPROGRESS - IO operations still in progress
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_test_io
-            static extern Int32 ca_test_io();
+            static extern int ca_test_io();
         }
 
         public static EcaType ca_pend_event(double nSecsToBlock_zeroMeansInfinite)
         {
 
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_pend_event(nSecsToBlock_zeroMeansInfinite)).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_pend_event(nSecsToBlock_zeroMeansInfinite)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -708,7 +704,7 @@ namespace Convergence.IO.EPICS
             // but it is preserved to insure backwards compatibility. WTF ??? !!!
             // https://epics.anl.gov/base/R3-14/10-docs/CAref.html#L3249
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_pend_event
-            static extern Int32 ca_pend_event(double timeOut_secs_zeroMeansInfinite);
+            static extern int ca_pend_event(double timeOut_secs_zeroMeansInfinite);
         }
 
         // -------
@@ -720,26 +716,26 @@ namespace Convergence.IO.EPICS
 
         // This tells us the *max* number of elements that the server will deal with.
 
-        public static UInt32 ca_element_count(this IntPtr pChanID)
+        public static uint ca_element_count(this nint pChanID)
         {
             return ca_element_count(pChanID);
             [DllImport(CA_DLL_NAME)]
             // Returns the maximum array element count in the server for the specified channel.
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_element_count
-            static extern UInt32 ca_element_count(IntPtr pChanID);
+            static extern uint ca_element_count(nint pChanID);
         }
 
-        public static Int16 ca_field_type(this IntPtr pChanID)
+        public static short ca_field_type(this nint pChanID)
         {
             return ca_field_type(pChanID);
-            
+
             [DllImport(CA_DLL_NAME)]
             // Returns the native 'field type' in the server of the process variable.
             // The returned code will be one of the DBF_ values, or 'DBF_NO_ACCESS'
             // if the channel is disconnected.
             // Could the field type have changed, on a reconnect ? Detect that !!!
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_field_type
-            static extern Int16 ca_field_type(IntPtr pChanID);
+            static extern short ca_field_type(nint pChanID);
         }
 
         // If we have write access, do we always have 'read' access ??
@@ -747,73 +743,73 @@ namespace Convergence.IO.EPICS
         // but the value itself isn't readable ?
         // In that case, we probably need a special FieldType ???
 
-        public static bool ca_read_access(this IntPtr pChanID)
+        public static bool ca_read_access(this nint pChanID)
         {
             return ca_read_access(pChanID) != 0;
             [DllImport(CA_DLL_NAME)]
             // Returns boolean true if the client currently has read access
             // to the specified channel and boolean false otherwise.
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_read_access
-            static extern Int32 ca_read_access(IntPtr pChanID);
+            static extern int ca_read_access(nint pChanID);
         }
 
-        public static bool ca_write_access(this IntPtr pChanID)
+        public static bool ca_write_access(this nint pChanID)
         {
             return ca_write_access(pChanID) != 0;
             [DllImport(CA_DLL_NAME)]
             // Returns boolean true if the client currently has write access
             // to the specified channel and boolean false otherwise.
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_write_access
-            static extern Int32 ca_write_access(IntPtr pChanID);
+            static extern int ca_write_access(nint pChanID);
         }
 
-        public static string ca_name(this IntPtr pChanID)
+        public static string ca_name(this nint pChanID)
         {
             return Marshal.PtrToStringAnsi(
               ca_name(pChanID)
             )!;
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_name
-            static extern IntPtr ca_name(IntPtr pChanID);
+            static extern nint ca_name(nint pChanID);
         }
 
         // Get the 'user info tag' associated with the channel
 
-        public static IntPtr ca_puser(this IntPtr pChanID)
+        public static nint ca_puser(this nint pChanID)
         {
             return (int)ca_puser(pChanID);
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_puser
-            static extern IntPtr ca_puser(IntPtr pChanID);
+            static extern nint ca_puser(nint pChanID);
         }
 
         // Set the 'user info tag' associated with the channel
 
-        public static void ca_set_puser(this IntPtr pChanID, IntPtr userInfo)
+        public static void ca_set_puser(this nint pChanID, nint userInfo)
         {
             ca_set_puser(pChanID, userInfo);
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_set_puser
-            static extern void ca_set_puser(IntPtr chan, IntPtr puser);
+            static extern void ca_set_puser(nint chan, nint puser);
         }
 
         // Get the 'beacon period' for the channel.
         // Hmm, this might be useful to know, however the value comes back as a junk value
         // even if we wait until the channel has been successfully connected-to ...
 
-        public static double ca_beacon_period(this IntPtr pChanID)
+        public static double ca_beacon_period(this nint pChanID)
         {
             return ca_beacon_period(pChanID);
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_beacon_period
-            static extern double ca_beacon_period(IntPtr chan);
+            static extern double ca_beacon_period(nint chan);
         }
 
         // Replace the default 'exception handler'
 
         public static EcaType ca_add_exception_event(ExceptionHandlerCallback pExceptionHandlerCallBack, nint userArg)
         {
-            if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(ca_add_exception_event(pExceptionHandlerCallBack, userArg)).ToString(), out EcaType result))
+            if (Enum.TryParse(CA_EXTRACT_MSG_NO(ca_add_exception_event(pExceptionHandlerCallBack, userArg)).ToString(), out EcaType result))
             {
                 return result;
             }
@@ -825,9 +821,9 @@ namespace Convergence.IO.EPICS
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_add_exception_event
             // This changes 'ca_exception_func' and 'ca_exception_arg'.
             // Called via 'ca_client_context::exception'
-            static extern Int32 ca_add_exception_event(
+            static extern int ca_add_exception_event(
               ExceptionHandlerCallback pEventCallBack,
-              IntPtr userArg // 'exception_handler_args'
+              nint userArg // 'exception_handler_args'
             );
         }
 
@@ -838,10 +834,10 @@ namespace Convergence.IO.EPICS
             )!;
             [DllImport(CA_DLL_NAME)]
             // https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_version
-            static extern IntPtr ca_version();
+            static extern nint ca_version();
         }
 
-        private static int CA_EXTRACT_MSG_NO(int eca_code) => ((eca_code & ChannelAccessConstants.CA_M_MSG_NO) >> ChannelAccessConstants.CA_V_MSG_NO);
+        private static int CA_EXTRACT_MSG_NO(int eca_code) => (eca_code & ChannelAccessConstants.CA_M_MSG_NO) >> ChannelAccessConstants.CA_V_MSG_NO;
     }
 
 }

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Convergence.IO.EPICS
+namespace Convergence.IO.EPICS.CA
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct EventCallbackArgs
@@ -34,33 +34,33 @@ namespace Convergence.IO.EPICS
 
     public struct ExceptionHandlerEventArgs
     {
-        public IntPtr usr; // User argument supplied when installed
-        public IntPtr chid; // Channel id (may be NULL)
-        public Int32 type; // Type requested
-        public Int32 count; // Count requested
-        public IntPtr addr; // User's address to write results of CA_OP_GET 
-        public Int32 stat; // Channel access ECA_XXXX status code
-        public Int32 op; // CA_OP_GET, CA_OP_PUT, ..., CA_OP_OTHER
-        public IntPtr ctx; // Character string containing context info
-        public IntPtr pFile; // Source file name (may be NULL)
-        public Int16 lineNo; // Source file line number (may be zero)
+        public nint usr; // User argument supplied when installed
+        public nint chid; // Channel id (may be NULL)
+        public int type; // Type requested
+        public int count; // Count requested
+        public nint addr; // User's address to write results of CA_OP_GET 
+        public int stat; // Channel access ECA_XXXX status code
+        public int op; // CA_OP_GET, CA_OP_PUT, ..., CA_OP_OTHER
+        public nint ctx; // Character string containing context info
+        public nint pFile; // Source file name (may be NULL)
+        public short lineNo; // Source file line number (may be zero)
         public string? Message => Marshal.PtrToStringAnsi(ctx);
         public string RequestInfo => $"Requested {count} elements of type {type}";
     }
 
-    public class CaEventCallbackDelegate
+    public class EventCallbackDelegate
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void CaReadCallback(EventCallbackArgs data);
+        public delegate void ReadCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void CaWriteCallback(EventCallbackArgs data);
+        public delegate void WriteCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void CaMonitorCallback(EventCallbackArgs data);
+        public delegate void MonitorCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void CaConnectCallback(ConnectionEventCallbackArgs args);
+        public delegate void ConnectCallback(ConnectionEventCallbackArgs args);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void ExceptionHandlerCallback(ExceptionHandlerEventArgs args);

@@ -1,81 +1,25 @@
-﻿using Convergence.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Convergence.IO.EPICS
+namespace Convergence.IO.EPICS.CA
 {
-    /// <summary>
-    /// Settings for EPICS protocol.
-    /// 
-    /// EPICS only requires the distintion between CA and PVA.
-    /// </summary>
-    public class Settings : ISettings
+    public static class Helpers
     {
-        /// <summary>
-        /// The channel handle.
-        /// </summary>
-        public IntPtr ChannelHandle = IntPtr.Zero;
-        /// <summary>
-        /// True if the protocol is PVA.
-        /// </summary>
-        public bool IsPVA { get; set; }
-
-        /// <summary>
-        /// True if the protocol is server.
-        /// A server would contain db records, while a client would not.
-        /// </summary>
-        public bool IsServer { get; set; }
-
-        /// <summary>
-        /// The data type.
-        /// </summary>
-        public DbFieldType DataType { get; set; }
-
-        /// <summary>
-        /// Number of elements.
-        /// Greater than 1 if array.
-        /// </summary>
-        public int ElementCount { get; set; } = 1;
-
-        /// <summary>
-        /// Description of the PV.
-        /// </summary>
-        string ? Description { get; set; }
-
-        /// <summary>
-        /// Pointer to the monitor handle.
-        /// </summary>
-        public IntPtr MonitorHandle  = IntPtr.Zero;
-
-        /// <summary>
-        /// Pointer to the write handle.
-        /// 
-        public IntPtr WriteHandle = IntPtr.Zero;
-
-
-        public Settings(DbFieldType datatype, bool isServer, int elementCount, bool isPVA)
-        {
-            DataType = datatype;
-            IsServer = isServer;
-            ElementCount = elementCount;
-            IsPVA = isPVA;
-        }
-
         // Decode EPICS data according to the data type.
-        public object DecodeEventData(EventCallbackArgs args)
+        public static object DecodeEventData(EventCallbackArgs args)
         {
             object data = null;
             Enum.TryParse<DbFieldType>(args.type.ToString(), out var type);
-            switch(type)
+            switch (type)
             {
                 // Decode data for and BDF_SHORT_i16
                 case DbFieldType.DBF_SHORT_i16:
                 case DbFieldType.DBF_ENUM_i16:
-                    Int16[] shortArray = new Int16[args.count];
+                    short[] shortArray = new short[args.count];
                     Marshal.Copy(args.dbr, shortArray, 0, args.count);
                     if (shortArray.Length == 1)
                     {
@@ -88,7 +32,7 @@ namespace Convergence.IO.EPICS
                     return data;
                 // Decode data for and DBF_LONG_i32
                 case DbFieldType.DBF_LONG_i32:
-                    Int32[] longArray = new Int32[args.count];
+                    int[] longArray = new int[args.count];
                     Marshal.Copy(args.dbr, longArray, 0, args.count);
                     if (longArray.Length == 1)
                     {
@@ -133,6 +77,29 @@ namespace Convergence.IO.EPICS
                     return data;
             }
             return data;
+        }
+
+        public static DbFieldType GetDBFieldType(Type sType)
+        {
+            switch (sType)
+            {
+                case Type type when type == typeof(bool):
+                case Type t when t == typeof(Enum):
+                    return DbFieldType.DBF_ENUM_i16;
+                case Type t when t == typeof(byte):
+                    return DbFieldType.DBF_CHAR_byte;
+                case Type t when t == typeof(short):
+                    return DbFieldType.DBF_SHORT_i16;
+                case Type t when t == typeof(int):
+                    return DbFieldType.DBF_LONG_i32;
+                case Type t when t == typeof(float):
+                    return DbFieldType.DBF_FLOAT_f32;
+                case Type t when t == typeof(double):
+                    return DbFieldType.DBF_DOUBLE_f64;
+                case Type t when t == typeof(string):
+                default:
+                    return DbFieldType.DBF_STRING_s39;
+            }
         }
     }
 }
