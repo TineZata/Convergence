@@ -154,11 +154,10 @@ namespace Convergence.IO.EPICS.CA
         /// <summary>
         /// Handles the EPICS CA read.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="endPointID"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T callback)
+        public Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback callback)
         {
             var cb = callback as ReadCallback;
             var tcs = new TaskCompletionSource<EcaType>();
