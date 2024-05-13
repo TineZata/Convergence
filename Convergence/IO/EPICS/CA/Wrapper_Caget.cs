@@ -51,7 +51,7 @@ namespace Convergence.IO.EPICS.CA
 			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
 			if (connResult == EndPointStatus.Okay)
 			{
-				_status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync(endpoint, (value) =>
+				_status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endpoint, (value) =>
 				{
 					_value = Convergence.IO.EPICS.CA.Helpers.DecodeEventData(value);
 				});

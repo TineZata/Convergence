@@ -151,14 +151,15 @@ namespace Convergence.IO.EPICS.CA
             return disconnected;
         }
 
-        /// <summary>
-        /// Handles the EPICS CA read.
-        /// </summary>
-        /// <param name="endPointID"></param>
-        /// <param name="callback"></param>
-        /// <returns></returns>
-        public Task<EndPointStatus> ReadAsync(EndPointID endPointID, ReadCallback callback)
-        {
+		/// <summary>
+		/// Handles the EPICS CA read.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="endPointID"></param>
+		/// <param name="callback"></param>
+		/// <returns></returns>
+		public Task<EndPointStatus> ReadAsync<T>(EndPointID endPointID, T callback)
+		{
             var cb = callback as ReadCallback;
             var tcs = new TaskCompletionSource<EcaType>();
             // If the callback is null, don't bother trying to read. ca_array_get_callback will return ECA_BADFUNCPTR
