@@ -14,6 +14,7 @@ namespace Convergence.IO.EPICS.CA
     public class ConvergeOnEPICSChannelAccess : IConvergence
     {
         public static readonly double EPICS_TIMEOUT_SEC = 0.5;
+        public static readonly int EPICS_TIMEOUT_MSEC = (int)(EPICS_TIMEOUT_SEC * 1000);
 
         /// <summary>
         /// Singleton instance of Convergence on EPICS Channel Access.
@@ -104,7 +105,7 @@ namespace Convergence.IO.EPICS.CA
                     }
                     // Introduce an artificial delay if callback is not null.
                     if (connectCallback != null)
-                        Thread.Sleep((int)(EPICS_TIMEOUT_SEC * 1000));
+                        Thread.Sleep(EPICS_TIMEOUT_MSEC);
                     // If the callback is null, then we need to explicitly check the state of the channel,
                     // as connection will just return ECA_NORMAL, so an additional check is required.
                     if (connectCallback == null)

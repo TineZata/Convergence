@@ -44,6 +44,8 @@ namespace Convergence.IO.EPICS.CA
 		/// <returns></returns>
 		public static async Task<CagetAsyncResult> CagetAsync(String pvName, System.Type type, int elementCount, bool disconnect)
 		{
+			EndPointStatus status = EndPointStatus.UnknownError;
+			object value = null;
 			CagetAsyncResult cagetAsyncResult = new CagetAsyncResult();
 			// Starts off with a EndPoint connection to the PV
 			var endpoint = new EndPointID(Protocols.EPICS_CA, pvName);
@@ -54,18 +56,22 @@ namespace Convergence.IO.EPICS.CA
 			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
 			if (connResult == EndPointStatus.Okay)
 			{
-				_status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endpoint, (value) =>
+				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endpoint, (EventCallbackDelegate.WriteCallback)((valueOut) =>
 				{
-					_value = Convergence.IO.EPICS.CA.Helpers.DecodeEventData(value);
-				});
-				cagetAsyncResult = new CagetAsyncResult { Status = _status, Value = _value };
+					value = Convergence.IO.EPICS.CA.Helpers.DecodeEventData(valueOut);
+				}));
+				cagetAsyncResult = new CagetAsyncResult { Status = status, Value = value };
 			}
 			else
 			{
-				cagetAsyncResult =  new CagetAsyncResult { Status = _status, Value = _value};
+				cagetAsyncResult =  new CagetAsyncResult { Status = status, Value = value};
 			}
 			if (disconnect)
+			{
+				// Artificial delay to allow the read to complete
+				Task.Delay(Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.EPICS_TIMEOUT_MSEC).Wait();
 				Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.Disconnect(endpoint);
+			}
 			return cagetAsyncResult;
 		}
 

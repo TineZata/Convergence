@@ -29,18 +29,21 @@ namespace Convergence.IO.EPICS.CA
 		/// <returns></returns>
 		public static async Task<EndPointStatus> CaPutAsync(String pvName, object value, System.Type type)
 		{
-			return await CaPutAsync(pvName, value, type, 1);
+			return await CaPutAsync(pvName, value, type, 1, true);
 		}
 		/// <summary>
 		/// EPICS caput async method, which specifies the PV name, the data type and the element count.
+		/// If disconnect is true, will disconnect after writing the value.
 		/// </summary>
 		/// <param name="pvName"></param>
 		/// <param name="value"></param>
 		/// <param name="type"></param>
 		/// <param name="elementCount"></param>
+		/// <param name="disconnect"></param>
 		/// <returns></returns>
-		public static async Task<EndPointStatus> CaPutAsync(String pvName, object value, System.Type type, int elementCount)
+		public static async Task<EndPointStatus> CaPutAsync(String pvName, object value, System.Type type, int elementCount, bool disconnect)
 		{
+			EndPointStatus status = EndPointStatus.UnknownError;
 			// Starts off with a EndPoint connection to the PV
 			var endpoint = new EndPointID(Protocols.EPICS_CA, pvName);
 			var epicsSettings = new Convergence.IO.EPICS.CA.Settings(
@@ -52,9 +55,15 @@ namespace Convergence.IO.EPICS.CA
 			{
 				GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
 				nint valuePtr = handle.AddrOfPinnedObject();
-				_status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync(endpoint, valuePtr, _nullWriteCallback);
+				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync(endpoint, valuePtr, _nullWriteCallback);
 			}
-			return _status;
+			if (disconnect)
+			{
+				// Artificial delay to allow the write to complete
+				Task.Delay(Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.EPICS_TIMEOUT_MSEC).Wait();
+				Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.Disconnect(endpoint);
+			}
+			return status;
 		}
 
 	}

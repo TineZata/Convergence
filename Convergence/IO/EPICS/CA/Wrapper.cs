@@ -12,8 +12,5 @@ namespace Convergence.IO.EPICS.CA
 		private static readonly Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback? _nullWriteCallback = null;
 		// Private readonly null connection changed callback
 		private static readonly Convergence.IO.EPICS.CA.EventCallbackDelegate.ConnectCallback? _nullConnectionCallback = null;
-
-		private static EndPointStatus _status = EndPointStatus.Disconnected;
-		private static object? _value = null;
 	}
 }
