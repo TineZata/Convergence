@@ -12,7 +12,9 @@ namespace Convergence.IO.EPICS.CA
 
 		/// <summary>
 		/// EPICS caget async method, which specifies the PV name only.
-		/// Will return the value as a string and assume element count of 1.
+		/// Defult type is string.
+		/// Default element count is 1.
+		/// PV will be disconnected after reading the value.
 		/// </summary>
 		/// <param name="pvName"></param>
 		/// <returns></returns>
@@ -23,7 +25,8 @@ namespace Convergence.IO.EPICS.CA
 
 		/// <summary>
 		/// EPICS caget async method, which specifies the PV name and the data type.
-		/// Will assume element count of 1.
+		/// Default element count is 1.
+		/// PV will be disconnected after reading the value.
 		/// </summary>
 		/// <param name="pvName"></param>
 		/// <param name="type"></param>

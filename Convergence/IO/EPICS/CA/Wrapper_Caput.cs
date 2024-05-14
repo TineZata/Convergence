@@ -10,8 +10,10 @@ namespace Convergence.IO.EPICS.CA
 	public static partial class Wrapper
 	{
 		/// <summary>
-		/// EPICS caput async method, which specifies the PV name and the data type.
-		/// Will assume element count of 1.
+		/// EPICS caput async method, which specifies the PV name and value.
+		/// Default type is string.
+		/// Defualt element count is 1.
+		/// PV will be disconnected after writing the value.
 		/// </summary>
 		/// <param name="pvName"></param>
 		/// <param name="value"></param>
@@ -21,7 +23,9 @@ namespace Convergence.IO.EPICS.CA
 			return await CaPutAsync(pvName, value, typeof(string));
 		}
 		/// <summary>
-		/// EPICS caput async method, which specifies the PV name, the data type and the element count.
+		/// EPICS caput async method, which specifies the PV name and the data type.
+		/// Default element count is 1.
+		/// PV will be disconnected after writing the value.
 		/// </summary>
 		/// <param name="pvName"></param>
 		/// <param name="value"></param>
