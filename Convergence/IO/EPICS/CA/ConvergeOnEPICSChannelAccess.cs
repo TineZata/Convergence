@@ -22,7 +22,15 @@ namespace Convergence.IO.EPICS.CA
         /// <summary>
         /// ConcurrentDictionary of all the EPICS CA connections as a key-value pair of EndPointID and EndPointBase<EPICSSettings>.
         /// </summary>
-        private static Dictionary<EndPointID, Settings>? _epics_ca_connections = new();
+        private static System.Collections.Concurrent.ConcurrentDictionary<EndPointID, Settings>? _epics_ca_connections = new();
+
+        /// <summary>
+        /// Snapshot of all the EPICS CA connections.
+        /// </summary>
+        public System.Collections.Concurrent.ConcurrentDictionary<EndPointID, Settings> ConnectionsInstance
+        {
+			get => _epics_ca_connections!;
+		}
 
         /// <summary>
         /// Network communication hub, which keeps track of all the connections on all EPICS Channels Access endpoints.

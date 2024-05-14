@@ -101,5 +101,22 @@ namespace Convergence.IO.EPICS.CA
                     return DbFieldType.DBF_STRING_s39;
             }
         }
-    }
+        /// <summary>
+        /// Get the EndPointID from the PV name.
+        /// </summary>
+        /// <param name="pvName"></param>
+        /// <returns></returns>
+		internal static EndPointID GetEndPointID(String pvName)
+		{
+            foreach (var kvp in ConvergeOnEPICSChannelAccess.Hub.ConnectionsInstance)
+            {
+				EndPointID endpointId = kvp.Key;
+				if (endpointId.EndPointName == pvName)
+                {
+					return endpointId;
+				}
+            }
+            return new EndPointID(Protocols.None, "");
+		}
+	}
 }

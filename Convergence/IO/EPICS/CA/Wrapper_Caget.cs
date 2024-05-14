@@ -30,18 +30,21 @@ namespace Convergence.IO.EPICS.CA
 		/// <returns></returns>
 		public static async Task<CagetAsyncResult> CagetAsync(String pvName, System.Type type)
 		{
-			return await CagetAsync(pvName, type, 1);
+			return await CagetAsync(pvName, type, 1, true);
 		}
 
 		/// <summary>
 		/// EPICS caget async method, which specifies the PV name, the data type and the element count.
+		/// If disconnect is true, will disconnect after reading the value.
 		/// </summary>
 		/// <param name="pvName"></param>
 		/// <param name="type"></param>
 		/// <param name="elementCount"></param>
+		/// <param name="disconnect"></param>
 		/// <returns></returns>
-		public static async Task<CagetAsyncResult> CagetAsync(String pvName, System.Type type, int elementCount)
+		public static async Task<CagetAsyncResult> CagetAsync(String pvName, System.Type type, int elementCount, bool disconnect)
 		{
+			CagetAsyncResult cagetAsyncResult = new CagetAsyncResult();
 			// Starts off with a EndPoint connection to the PV
 			var endpoint = new EndPointID(Protocols.EPICS_CA, pvName);
 			var epicsSettings = new Convergence.IO.EPICS.CA.Settings(
@@ -55,12 +58,15 @@ namespace Convergence.IO.EPICS.CA
 				{
 					_value = Convergence.IO.EPICS.CA.Helpers.DecodeEventData(value);
 				});
-				return new CagetAsyncResult { Status = _status, Value = _value };
+				cagetAsyncResult = new CagetAsyncResult { Status = _status, Value = _value };
 			}
 			else
 			{
-				return new CagetAsyncResult { Status = _status, Value = _value};
-			}	
+				cagetAsyncResult =  new CagetAsyncResult { Status = _status, Value = _value};
+			}
+			if (disconnect)
+				Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.Disconnect(endpoint);
+			return cagetAsyncResult;
 		}
 
 	}
