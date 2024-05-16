@@ -20,7 +20,7 @@ namespace Convergence.IO.EPICS.CA
 		/// <returns></returns>
 		public static async Task<EndPointStatus> CaPutAsync(String pvName, object value)
 		{
-			return await CaPutAsync(pvName, value, typeof(string));
+			return await CaputAsync(pvName, value, typeof(string));
 		}
 		/// <summary>
 		/// EPICS caput async method, which specifies the PV name and the data type.
@@ -31,7 +31,7 @@ namespace Convergence.IO.EPICS.CA
 		/// <param name="value"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public static async Task<EndPointStatus> CaPutAsync(String pvName, object value, System.Type type)
+		public static async Task<EndPointStatus> CaputAsync(String pvName, object value, System.Type type)
 		{
 			return await CaPutAsync(pvName, value, type, 1, true);
 		}
