@@ -18,7 +18,7 @@ namespace Convergence.IO.EPICS.CA
 		/// <param name="pvName"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public static async Task<EndPointStatus> CaPutAsync(String pvName, object value)
+		public static async Task<EndPointStatus> CaputAsync(String pvName, object value)
 		{
 			return await CaputAsync(pvName, value, typeof(string));
 		}
