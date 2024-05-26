@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Convergence.IO.EPICS.CA
 {
@@ -117,6 +118,62 @@ namespace Convergence.IO.EPICS.CA
 				}
             }
             return new EndPointID(Protocols.None, "");
+		}
+
+
+        public static async Task<string[]> GetFullMenuListAsync(string pvName)
+        {
+            List<string> menu  = new List<string>();
+			// Get the zero string
+			var zero = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".ZRST");
+			menu.Add(zero.Value != null ? (string)zero.Value : string.Empty);
+			// Get the one string
+			var one = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".ONST");
+			menu.Add(one.Value != null ? (string)one.Value : string.Empty);
+			// Get the two string
+			var two = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".TWST");
+			menu.Add(two.Value != null ? (string)two.Value : string.Empty);
+			// Get the three string
+			var three = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".THST");
+			menu.Add(three.Value != null ? (string)three.Value : string.Empty);
+			// Get the four string
+			var four = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".FRST");
+			menu.Add(four.Value != null ? (string)four.Value : string.Empty);
+			// Get the five string
+			var five = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".FVST");
+			menu.Add(five.Value != null ? (string)five.Value : string.Empty);
+			// Get the six string
+			var six = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".SXST");
+			menu.Add(six.Value != null ? (string)six.Value : string.Empty);
+			// Get the seven string
+			var seven = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".SVST");
+			menu.Add(seven.Value != null ? (string)seven.Value : string.Empty);
+			// Get the eight string
+			var eight = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".EIST");
+			menu.Add(eight.Value != null ? (string)eight.Value : string.Empty);
+			// Get the nine string
+			var nine = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".NIST");
+			menu.Add(nine.Value != null ? (string)nine.Value : string.Empty);
+			// Get the ten string
+			var ten = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".TEST");
+			menu.Add(ten.Value != null ? (string)ten.Value : string.Empty);
+			// Get the eleven string
+			var eleven = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".ELST");
+			menu.Add(eleven.Value != null ? (string)eleven.Value : string.Empty);
+			// Get the twelve string
+			var twelve = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".TVST");
+			menu.Add(twelve.Value != null ? (string)twelve.Value : string.Empty);
+			// Get the thirteen string
+			var thirteen = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".TTST");
+			menu.Add(thirteen.Value != null ? (string)thirteen.Value : string.Empty);
+			// Get the fourteen string
+			var fourteen = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".FTST");
+			menu.Add(fourteen.Value != null ? (string)fourteen.Value : string.Empty);
+			// Get the fifteen string
+			var fifteen = await Convergence.IO.EPICS.CA.Wrapper.CagetAsync(pvName + ".FFST");
+			menu.Add(fifteen.Value != null ? (string)fifteen.Value : string.Empty);
+
+            return menu.ToArray();
 		}
 	}
 }

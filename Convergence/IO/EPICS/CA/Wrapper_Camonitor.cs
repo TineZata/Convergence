@@ -32,7 +32,8 @@ namespace Convergence.IO.EPICS.CA
 			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
 			if (connResult == EndPointStatus.Okay)
 			{
-				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.SubscribeAsync(endpoint, type, monitorCallback);
+				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.SubscribeAsync<MonitorTypes, Convergence.IO.EPICS.CA.EventCallbackDelegate.MonitorCallback>
+					(endpoint, MonitorTypes.MonitorValField, monitorCallback);
 			}
 			else
 			{
