@@ -18,7 +18,7 @@ namespace Convergence.IO.EPICS.CA
 		/// <param name="elementCount"></param>
 		/// <param name="disconnect"></param>
 		/// <returns></returns>
-		public static async Task<EndPointStatus> CamonitorAsync(String pvName, System.Type type, int elementCount,
+		public static async Task<EndPointStatus> CamonitorAsync(String pvName, System.Type type,
 			Convergence.IO.EPICS.CA.EventCallbackDelegate.MonitorCallback monitorCallback)
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
@@ -27,7 +27,7 @@ namespace Convergence.IO.EPICS.CA
 			var endpoint = new EndPointID(Protocols.EPICS_CA, pvName);
 			var epicsSettings = new Convergence.IO.EPICS.CA.Settings(
 				datatype: Convergence.IO.EPICS.CA.Helpers.GetDBFieldType(type),
-				elementCount: elementCount);
+				elementCount: 1);
 			var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
 			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
 			if (connResult == EndPointStatus.Okay)
