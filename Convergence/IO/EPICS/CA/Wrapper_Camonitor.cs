@@ -23,12 +23,10 @@ namespace Convergence.IO.EPICS.CA
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
 			CagetAsyncResult cagetAsyncResult = new CagetAsyncResult();
-			// Starts off with a EndPoint connection to the PV
-			var endpoint = new EndPointID(Protocols.EPICS_CA, pvName);
-			var epicsSettings = new Convergence.IO.EPICS.CA.Settings(
-				datatype: Convergence.IO.EPICS.CA.Helpers.GetDBFieldType(type),
-				elementCount: 1);
-			var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
+            // Starts off with a EndPoint connection to the PV
+            var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
+            var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, 1);
+            var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
 			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
 			if (connResult == EndPointStatus.Okay)
 			{

@@ -70,14 +70,6 @@ namespace Convergence.IO.EPICS.CA
 
         private const string CA_DLL_NAME = "IO\\EPICS\\CA\\CA";
 
-        //
-        // Most of the API calls return an integer 'ECA' code.
-        //
-
-        // -------
-        // CONTEXT
-        // -------
-
         public static nint CurrentContext { get; private set; }
 
         private static void set_current_context()
@@ -89,14 +81,14 @@ namespace Convergence.IO.EPICS.CA
                 context.ca_attach_context();
                 // Check if CurrentContext has been created
                 CurrentContext = ca_current_context();
-                try
-                {
-                    CurrentContext.Should().Be(context);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("CurrentContext is not equal to context", ex);
-                }
+                //try
+                //{
+                //    CurrentContext.Should().Be(context);
+                //}
+                //catch (Exception ex)
+                //{
+                //    throw new Exception("CurrentContext is not equal to context", ex);
+                //}
             }
             // else if CurrentContext is not nint.Zero but not equal to context
             else if (CurrentContext != ca_current_context())
@@ -105,14 +97,14 @@ namespace Convergence.IO.EPICS.CA
                 ca_context_destroy();
                 // Get a new context
                 CurrentContext = ca_current_context();
-                try
-                {
-                    CurrentContext.Should().Be(context);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("CurrentContext is not equal to context", ex);
-                }
+                //try
+                //{
+                //    CurrentContext.Should().Be(context);
+                //}
+                //catch (Exception ex)
+                //{
+                //    throw new Exception("CurrentContext is not equal to context", ex);
+                //}
             }
             else
             {

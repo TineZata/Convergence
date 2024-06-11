@@ -33,6 +33,24 @@ namespace Convergence.IO.EPICS.CA
 			get => _epics_ca_connections!;
 		}
 
+        // Get EndPointID from the dictionary using the PV name.
+        public EndPointID GetEpicsCaEndPointID(string pvName)
+        {
+            var epicsSettings = _epics_ca_connections!.FirstOrDefault(x => x.Key.EndPointName == pvName);
+            if (epicsSettings.Key == null)
+                return new EndPointID(Protocols.EPICS_CA, pvName);
+            else
+            return epicsSettings.Key;
+        }
+
+        public Settings GetEpicsCaEndPointSettings(EndPointID endPointID, System.Type type, int elements)
+        {
+            if (_epics_ca_connections!.ContainsKey(endPointID))
+                return _epics_ca_connections[endPointID];
+            else
+                return new Settings(Helpers.GetDBFieldType(type), elements);
+        }
+
         /// <summary>
         /// Network communication hub, which keeps track of all the connections on all EPICS Channels Access endpoints.
         /// </summary>
@@ -67,7 +85,7 @@ namespace Convergence.IO.EPICS.CA
             {
                 var tcs = new TaskCompletionSource<EcaType>();
                 // Check if the CA ID already exists.
-                if (_epics_ca_connections!.ContainsKey(endPointArgs.EndPointID))
+                if (_epics_ca_connections!.ContainsKey(endPointArgs.EndPointID) )
                 {
                     settings = _epics_ca_connections[endPointArgs.EndPointID];
                     tcs.SetResult(EcaType.ECA_NORMAL);
