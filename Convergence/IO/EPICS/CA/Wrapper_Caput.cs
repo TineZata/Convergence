@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using CaputCallback = Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback;
 
 namespace Convergence.IO.EPICS.CA
 {
@@ -33,7 +34,7 @@ namespace Convergence.IO.EPICS.CA
 		/// <returns></returns>
 		public static async Task<EndPointStatus> CaputAsync(String pvName, object value, System.Type type)
 		{
-			return await CaPutAsync(pvName, value, type, 1, true);
+			return await CaputAsync(pvName, value, type, 1, null);
 		}
 		/// <summary>
 		/// EPICS caput async method, which specifies the PV name, the data type and the element count.
@@ -45,7 +46,7 @@ namespace Convergence.IO.EPICS.CA
 		/// <param name="elementCount"></param>
 		/// <param name="disconnect"></param>
 		/// <returns></returns>
-		public static async Task<EndPointStatus> CaPutAsync(String pvName, object value, System.Type type, int elementCount, bool disconnect)
+		public static async Task<EndPointStatus> CaputAsync(String pvName, object value, System.Type type, int elementCount, CaputCallback? callback)
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
 			// Starts off with a EndPoint connection to the PV
@@ -57,17 +58,9 @@ namespace Convergence.IO.EPICS.CA
 			{
 				GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
 				nint valuePtr = handle.AddrOfPinnedObject();
-				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.WriteCallback>(endpoint, valuePtr, (value) =>
-				{
-					
-				});
+				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<CaputCallback>(endpoint, valuePtr, callback);
 			}
-			if (disconnect)
-			{
-				// Artificial delay to allow the write to complete
-				Task.Delay(Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.EPICS_TIMEOUT_MSEC).Wait();
-				Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.Disconnect(endpoint);
-			}
+			
 			return status;
 		}
 
