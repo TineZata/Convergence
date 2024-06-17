@@ -13,7 +13,7 @@ namespace Convergence.IO.EPICS.CA
 {
     public class ConvergeOnEPICSChannelAccess : IConvergence
     {
-        public static readonly double EPICS_TIMEOUT_SEC = 0.5;
+        public static readonly double EPICS_TIMEOUT_SEC = 0.05;
         public static readonly int EPICS_TIMEOUT_MSEC = (int)(EPICS_TIMEOUT_SEC * 1000);
 
         /// <summary>
