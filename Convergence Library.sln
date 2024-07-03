@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Convergence", "Convergence\Convergence.csproj", "{CF26E36B-7A84-42B5-B9D4-7CEC7510AB62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Convergence", "Lib\Convergence.csproj", "{CF26E36B-7A84-42B5-B9D4-7CEC7510AB62}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConvergenceTests", "ConvergenceTests\ConvergenceTests.csproj", "{5A5C979D-0392-4483-B8AD-98E819924769}"
 EndProject
