@@ -24,11 +24,15 @@ namespace Convergence.IO.EPICS.CA
         /// ConcurrentDictionary of all the EPICS CA connections as a key-value pair of EndPointID and EndPointBase<EPICSSettings>.
         /// </summary>
         private static System.Collections.Concurrent.ConcurrentDictionary<EndPointID, Settings>? _epics_ca_connections = new();
+		/// <summary>
+		/// Lock object
+		/// </summary>
+		private static readonly object _lock = new object();
 
-        /// <summary>
-        /// Snapshot of all the EPICS CA connections.
-        /// </summary>
-        public System.Collections.Concurrent.ConcurrentDictionary<EndPointID, Settings> ConnectionsInstance
+		/// <summary>
+		/// Snapshot of all the EPICS CA connections.
+		/// </summary>
+		public System.Collections.Concurrent.ConcurrentDictionary<EndPointID, Settings> ConnectionsInstance
         {
 			get => _epics_ca_connections!;
 		}
@@ -36,7 +40,7 @@ namespace Convergence.IO.EPICS.CA
         // Get EndPointID from the dictionary using the PV name.
         public EndPointID GetEpicsCaEndPointID(string pvName)
         {
-            var epicsSettings = _epics_ca_connections!.FirstOrDefault(x => x.Key.EndPointName == pvName);
+            var epicsSettings = ConnectionsInstance.FirstOrDefault(x => x.Key.EndPointName == pvName);
             if (epicsSettings.Key == null)
                 return new EndPointID(Protocols.EPICS_CA, pvName);
             else
@@ -45,8 +49,8 @@ namespace Convergence.IO.EPICS.CA
 
         public Settings GetEpicsCaEndPointSettings(EndPointID endPointID, System.Type type, int elements)
         {
-            if (_epics_ca_connections!.ContainsKey(endPointID))
-                return _epics_ca_connections[endPointID];
+            if (ConnectionsInstance.ContainsKey(endPointID))
+                return ConnectionsInstance[endPointID];
             else
                 return new Settings(Helpers.GetDBFieldType(type), elements);
         }
@@ -56,14 +60,29 @@ namespace Convergence.IO.EPICS.CA
         /// </summary>
         public static ConvergeOnEPICSChannelAccess Hub
         {
-            get => _hub ??= new ConvergeOnEPICSChannelAccess();
-        }
+			//get => _hub ??= new ConvergeOnEPICSChannelAccess();
+			get
+			{
+				if (_hub == null)
+				{
+					lock (_lock)
+					{
+						if (_hub == null)
+						{
+							_hub = new ConvergeOnEPICSChannelAccess();
+						}
+					}
+				}
+				return _hub;
+			}
+		}
         /// <summary>
         /// Private constructor for singleton, to prevent external instantiation.
         /// </summary>
         private ConvergeOnEPICSChannelAccess()
         {
-        }
+            Console.WriteLine("XXXXX ConvergeOnEPICSChannelAccess instance created.");
+		}
 
         /// <summary>
         /// Handles the EPICS CA connection.
@@ -85,9 +104,9 @@ namespace Convergence.IO.EPICS.CA
             {
                 var tcs = new TaskCompletionSource<EcaType>();
                 // Check if the CA ID already exists.
-                if (_epics_ca_connections!.ContainsKey(endPointArgs.EndPointID) )
+                if (ConnectionsInstance.ContainsKey(endPointArgs.EndPointID) )
                 {
-                    settings = _epics_ca_connections[endPointArgs.EndPointID];
+                    settings = ConnectionsInstance[endPointArgs.EndPointID];
                     tcs.SetResult(EcaType.ECA_NORMAL);
                     return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
                 }
@@ -140,7 +159,7 @@ namespace Convergence.IO.EPICS.CA
                     {
                         // Try add a new ID, if not already added.
                         endPointArgs.EndPointID.UniqueId = Guid.NewGuid();
-                        if (!_epics_ca_connections!.TryAdd(endPointArgs.EndPointID, settings))
+                        if (!ConnectionsInstance.TryAdd(endPointArgs.EndPointID, settings))
                             tcs.SetResult(EcaType.ECA_NEWCONN); // New or resumed network connection
                         else
                             tcs.SetResult(EcaType.ECA_NORMAL);
@@ -165,13 +184,13 @@ namespace Convergence.IO.EPICS.CA
         {
             bool disconnected = false;
             EcaType result = EcaType.ECA_NOSUPPORT;
-            if (_epics_ca_connections!.ContainsKey(endPointID))
+            if (ConnectionsInstance.ContainsKey(endPointID))
             {
-                result = ChannelAccessWrapper.ca_clear_channel(_epics_ca_connections[endPointID].ChannelHandle);
+                result = ChannelAccessWrapper.ca_clear_channel(ConnectionsInstance[endPointID].ChannelHandle);
                 switch (result)
                 {
                     case EcaType.ECA_NORMAL:
-                        disconnected = _epics_ca_connections.Remove(endPointID, out _);
+                        disconnected = ConnectionsInstance.Remove(endPointID, out _);
                         break;
                 }
             }
@@ -198,12 +217,12 @@ namespace Convergence.IO.EPICS.CA
             }
             else
             {
-                if (!_epics_ca_connections!.ContainsKey(endPointID))
+                if (!ConnectionsInstance.ContainsKey(endPointID))
                 {
                     tcs.SetResult(EcaType.ECA_DISCONN);
                     return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
                 }
-                var epicsSettings = _epics_ca_connections[endPointID];
+                var epicsSettings = ConnectionsInstance[endPointID];
                 if (epicsSettings.ChannelHandle == nint.Zero)
                 {
                     tcs.SetResult(EcaType.ECA_BADFUNCPTR);
@@ -257,14 +276,14 @@ namespace Convergence.IO.EPICS.CA
             }
             else
             {
-                if (!_epics_ca_connections!.ContainsKey(endPointID))
+                if (!ConnectionsInstance.ContainsKey(endPointID))
                 {
                     tcs.SetResult(EcaType.ECA_DISCONN);
                     return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
                 }
                 else
                 {
-                    var epicsSettings = _epics_ca_connections[endPointID];
+                    var epicsSettings = ConnectionsInstance[endPointID];
                     if (epicsSettings.ChannelHandle == nint.Zero)
                     {
                         tcs.SetResult(EcaType.ECA_BADFUNCPTR);
@@ -311,14 +330,14 @@ namespace Convergence.IO.EPICS.CA
                 tcs.SetResult(EcaType.ECA_BADFUNCPTR);
                 return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
             }
-            if (!_epics_ca_connections!.ContainsKey(endPointID))
+            if (!ConnectionsInstance.ContainsKey(endPointID))
             {
                 tcs.SetResult(EcaType.ECA_DISCONN);
                 return Task.FromResult(EcaTypeToEndPointStatus(tcs.Task.Result));
             }
             else
             {
-                var epicsSettings = _epics_ca_connections[endPointID];
+                var epicsSettings = ConnectionsInstance[endPointID];
                 if (epicsSettings.ChannelHandle == nint.Zero)
                 {
                     tcs.SetResult(EcaType.ECA_BADFUNCPTR);
