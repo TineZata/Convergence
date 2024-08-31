@@ -81,7 +81,6 @@ namespace Convergence.IO.EPICS.CA
         /// </summary>
         private ConvergeOnEPICSChannelAccess()
         {
-            Console.WriteLine("XXXXX ConvergeOnEPICSChannelAccess instance created.");
 		}
 
         /// <summary>
