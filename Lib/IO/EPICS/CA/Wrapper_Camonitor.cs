@@ -22,7 +22,7 @@ namespace Convergence.IO.EPICS.CA
 			Convergence.IO.EPICS.CA.EventCallbackDelegate.MonitorCallback monitorCallback)
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
-			CagetAsyncResult cagetAsyncResult = new CagetAsyncResult();
+			CagetValueSnapshot cagetAsyncResult = new CagetValueSnapshot();
             // Starts off with a EndPoint connection to the PV
             var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
             var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, 1);

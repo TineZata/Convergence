@@ -36,7 +36,7 @@ namespace Convergence.IO.EPICS.CA
         /// <summary>
         /// Pointer to the monitor handle.
         /// </summary>
-        public nint MonitorHandle = nint.Zero;
+        public nint SubscriptionHandle = nint.Zero;
 
         /// <summary>
         /// Pointer to the write handle.

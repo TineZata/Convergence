@@ -18,7 +18,7 @@ namespace Convergence.IO.EPICS.CA
 		/// </summary>
 		/// <param name="pvName"></param>
 		/// <returns></returns>
-		public static async Task<CagetAsyncResult> CagetAsync(String pvName)
+		public static async Task<CagetValueSnapshot> CagetAsync(String pvName)
 		{
 			return await CagetAsync(pvName, typeof(string));
 		}
@@ -31,9 +31,9 @@ namespace Convergence.IO.EPICS.CA
 		/// <param name="pvName"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public static async Task<CagetAsyncResult> CagetAsync(String pvName, System.Type type)
+		public static async Task<CagetValueSnapshot> CagetAsync(String pvName, System.Type type)
 		{
-			return await CagetAsync(pvName, type, 1, true);
+			return await CagetAsync(pvName, type, 1);
 		}
 
 		/// <summary>
@@ -43,13 +43,12 @@ namespace Convergence.IO.EPICS.CA
 		/// <param name="pvName"></param>
 		/// <param name="type"></param>
 		/// <param name="elementCount"></param>
-		/// <param name="disconnect"></param>
 		/// <returns></returns>
-		public static async Task<CagetAsyncResult> CagetAsync(String pvName, System.Type type, int elementCount, bool disconnect)
+		public static async Task<CagetValueSnapshot> CagetAsync(String pvName, System.Type type, int elementCount)
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
 			object value = null;
-			CagetAsyncResult cagetAsyncResult = new CagetAsyncResult();
+			CagetValueSnapshot cagetSnapshot = new CagetValueSnapshot();
             // Starts off with a EndPoint connection to the PV
             var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
 			var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, elementCount);
@@ -61,19 +60,14 @@ namespace Convergence.IO.EPICS.CA
 				{
 					value = Convergence.IO.EPICS.CA.Helpers.DecodeEventData(valueOut);
 				}));
-				cagetAsyncResult = new CagetAsyncResult { Status = status, Value = value };
+				cagetSnapshot = new CagetValueSnapshot { Status = status, Value = value };
 			}
 			else
 			{
-				cagetAsyncResult =  new CagetAsyncResult { Status = status, Value = value};
+				cagetSnapshot =  new CagetValueSnapshot { Status = status, Value = value};
 			}
-			if (disconnect)
-			{
-				// Artificial delay to allow the read to complete
-				Task.Delay(Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.EPICS_TIMEOUT_MSEC).Wait();
-				Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.Disconnect(endpoint);
-			}
-			return cagetAsyncResult;
+			
+			return cagetSnapshot;
 		}
 
 	}
