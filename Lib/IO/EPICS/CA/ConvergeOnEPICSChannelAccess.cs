@@ -13,8 +13,7 @@ namespace Convergence.IO.EPICS.CA
 {
     public class ConvergeOnEPICSChannelAccess : IConvergence
     {
-        public static readonly double EPICS_TIMEOUT_SEC = 0.05;
-        public static readonly int EPICS_TIMEOUT_MSEC = (int)(EPICS_TIMEOUT_SEC * 1000);
+        public static readonly double EPICS_TIMEOUT_SEC = 0.15;
 
         /// <summary>
         /// Singleton instance of Convergence on EPICS Channel Access.
@@ -60,19 +59,15 @@ namespace Convergence.IO.EPICS.CA
         /// </summary>
         public static ConvergeOnEPICSChannelAccess Hub
         {
-			//get => _hub ??= new ConvergeOnEPICSChannelAccess();
 			get
 			{
-				if (_hub == null)
-				{
-					lock (_lock)
-					{
-						if (_hub == null)
-						{
-							_hub = new ConvergeOnEPICSChannelAccess();
-						}
-					}
-				}
+                if (_hub == null)
+                {
+                    lock (_lock)
+                    {
+                        _hub = new ConvergeOnEPICSChannelAccess();
+                    }
+                }
 				return _hub;
 			}
 		}
@@ -103,11 +98,11 @@ namespace Convergence.IO.EPICS.CA
             {
                 //var tcs = new TaskCompletionSource<EcaType>();
                 // Check if the CA ID already exists.
-                if (ConnectionsInstance.ContainsKey(endPointArgs.EndPointID) )
+                if (ConnectionsInstance.ContainsKey(endPointArgs.EndPointID))
                 {
                     settings = ConnectionsInstance[endPointArgs.EndPointID];
-					return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
-				}
+                    return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
+                }
                 else
                 {
                     // Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
@@ -126,27 +121,14 @@ namespace Convergence.IO.EPICS.CA
                                             out settings.ChannelHandle);
                     if (chCreateResult != EcaType.ECA_NORMAL)
                     {
-						return Task.FromResult(EcaTypeToEndPointStatus(chCreateResult));
+                        return Task.FromResult(EcaTypeToEndPointStatus(chCreateResult));
                     }
 
                     // If the callback is not null the channel access does not block on a pend_io, 
                     // however a call is still required to flush the IO.
                     if (ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
                     {
-						Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_EVDISALLOW));
-					}
-                    // Introduce an artificial delay if callback is not null.
-                    if (connectCallback != null)
-						ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
-					// If the callback is null, then we need to explicitly check the state of the channel,
-					// as connection will just return ECA_NORMAL, so an additional check is required.
-					//if (connectCallback == null)
-                    else {
-                        var castate = ChannelAccessWrapper.ca_state(settings.ChannelHandle);
-                        if (castate == ChannelState.NeverConnected || castate == ChannelState.Closed)
-                        {
-							return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_DISCONN));
-                        }
+                        return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_EVDISALLOW));
                     }
 
                     if (chCreateResult == EcaType.ECA_NORMAL)
@@ -154,16 +136,15 @@ namespace Convergence.IO.EPICS.CA
                         // Try add a new ID, if not already added.
                         endPointArgs.EndPointID.UniqueId = Guid.NewGuid();
                         if (!ConnectionsInstance.TryAdd(endPointArgs.EndPointID, settings))
-							return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NEWCONN)); // New or resumed network connection
+                            return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NEWCONN)); // New or resumed network connection
                         else
-							return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
+                            return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
                     }
                     else
                     {
                         return Task.FromResult(EcaTypeToEndPointStatus(chCreateResult));
                     }
                 }
-
             }
         }
 
@@ -175,17 +156,13 @@ namespace Convergence.IO.EPICS.CA
         public bool Disconnect(EndPointID endPointID)
         {
             bool disconnected = false;
-            EcaType result = EcaType.ECA_NOSUPPORT;
             if (ConnectionsInstance.ContainsKey(endPointID))
             {
-                if (ConnectionsInstance[endPointID].SubscriptionHandle != nint.Zero)
+				if (ConnectionsInstance[endPointID].SubscriptionHandle != nint.Zero)
 					ChannelAccessWrapper.ca_clear_subscription(ConnectionsInstance[endPointID].SubscriptionHandle);
-				result = ChannelAccessWrapper.ca_flush_io();
-                if (result == EcaType.ECA_NORMAL)
-                {
-                    ChannelAccessWrapper.ca_clear_channel(ConnectionsInstance[endPointID].ChannelHandle);
-                    disconnected = ConnectionsInstance.Remove(endPointID, out _);
-                }
+				ChannelAccessWrapper.ca_clear_channel(ConnectionsInstance[endPointID].ChannelHandle);
+				ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
+				disconnected = ConnectionsInstance.Remove(endPointID, out _);
             }
             return disconnected;
         }

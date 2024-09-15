@@ -1,6 +1,6 @@
 ﻿namespace Convergence.IO.EPICS.CA
 {
-    internal enum ChannelState
+    public enum ChannelState
     {
         NeverConnected,      // 0 : Server not found or unavailable
         PreviouslyConnected, // 1 : Was previously connected to server ... SERVER MIGHT CHANGE ?????
