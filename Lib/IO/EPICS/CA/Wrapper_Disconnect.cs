@@ -8,9 +8,9 @@ namespace Convergence.IO.EPICS.CA
 {
 	public static partial class Wrapper
 	{
-		public static bool Disconnect(String pvName)
+		public static async Task<bool> DisconnectAsync(String pvName)
 		{
-			return ConvergeOnEPICSChannelAccess.Hub.Disconnect(Convergence.IO.EPICS.CA.Helpers.GetEndPointID(pvName));
+			return await ConvergeOnEPICSChannelAccess.Hub.DisconnectAsync(Convergence.IO.EPICS.CA.Helpers.GetEndPointID(pvName));
 		}
 	}
 }

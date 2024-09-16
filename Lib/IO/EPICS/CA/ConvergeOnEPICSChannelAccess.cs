@@ -153,7 +153,7 @@ namespace Convergence.IO.EPICS.CA
         /// </summary>
         /// <param name="endPointID"></param>
         /// <returns></returns>
-        public bool Disconnect(EndPointID endPointID)
+        public Task <bool> DisconnectAsync(EndPointID endPointID)
         {
             bool disconnected = false;
             if (ConnectionsInstance.ContainsKey(endPointID))
@@ -164,7 +164,12 @@ namespace Convergence.IO.EPICS.CA
 				ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
 				disconnected = ConnectionsInstance.Remove(endPointID, out _);
             }
-            return disconnected;
+            else
+			{
+				// If it doesn't exist, it is already disconnected.
+				disconnected = true;
+			}
+			return Task.FromResult(disconnected);
         }
 
 		/// <summary>

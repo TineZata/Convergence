@@ -23,7 +23,7 @@ namespace Convergence.Interfaces
         /// Disconnects the EndPointID from the network.
         /// </summary>
         /// <param name="endPointID"></param>
-        public bool Disconnect(EndPointID endPointID);
+        public Task<bool> DisconnectAsync(EndPointID endPointID);
 
         /// <summary>
         /// Asynchronously reads the value of the EndPointID and returns the value in a callback.
