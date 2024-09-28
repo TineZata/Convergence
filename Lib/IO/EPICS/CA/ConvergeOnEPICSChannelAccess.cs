@@ -101,34 +101,62 @@ namespace Convergence.IO.EPICS.CA
                 if (ConnectionsInstance.ContainsKey(endPointArgs.EndPointID))
                 {
                     settings = ConnectionsInstance[endPointArgs.EndPointID];
-                    return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
+					// Log message that an existing channel is being used... with its unique ID.
+					Console.WriteLine($"Using existing channel for {endPointArgs.EndPointID.EndPointName} with ID {endPointArgs.EndPointID.UniqueId}");
+					return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
                 }
                 else
                 {
-                    // Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
-                    var contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
+                    // Log message that a new channel is being created
+                    Console.WriteLine($"Creating a new channel for {endPointArgs.EndPointID.EndPointName}");
+					// Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
+					var contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
                     if (contextResult != EcaType.ECA_NORMAL)
                     {
-                        return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+                        if (contextResult == EcaType.ECA_NOTTHREADED)
+                        {
+							// Log message that ECA_NOTTHREADED was returned and the current thread is not a member of a non-preemptive callback CA context.
+							Console.WriteLine($"Error creating context for {endPointArgs.EndPointID.EndPointName} - {contextResult}, non-preemptive thread was created, but will be destroyed.");
+							// Current thread is already a member of a non-preemptive callback CA context (possibly created implicitly)
+							// Forcibly destroy the current context and attempt annother context_create
+							ChannelAccessWrapper.ca_context_destroy();
+							// Try another connect create
+							contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
+                            if (contextResult != EcaType.ECA_NORMAL)
+                            {
+								Console.WriteLine($"Error creating 2nd context for {endPointArgs.EndPointID.EndPointName} - {contextResult}");
+								return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+							}
+						}
+						else
+                        {
+
+                            Console.WriteLine($"Error creating context for {endPointArgs.EndPointID.EndPointName} - {contextResult}");
+                            return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+                        }
                     }
 
-                    //var chCreateResult = ChannelAccessDLLWrapper.ca_create_channel(endPointArgs.EndPointID.EndPointName ?? "", null, out epicsSettings.ChannelHandle);
-                    // Do connection with a connection callback.
-                    EcaType chCreateResult = EcaType.ECA_DISCONN;
+                    // Do a ca_pend_event to make sure any residual events are cleared.
+                    ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
+
+					// Do connection with a connection callback.
+					EcaType chCreateResult = EcaType.ECA_DISCONN;
                     chCreateResult = ChannelAccessWrapper.ca_create_channel(
                                            endPointArgs.EndPointID.EndPointName ?? "",
                                             callback,
                                             out settings.ChannelHandle);
                     if (chCreateResult != EcaType.ECA_NORMAL)
                     {
-                        return Task.FromResult(EcaTypeToEndPointStatus(chCreateResult));
+                        Console.WriteLine($"Error creating channel for {endPointArgs.EndPointID.EndPointName} - {chCreateResult}");
+						return Task.FromResult(EcaTypeToEndPointStatus(chCreateResult));
                     }
 
                     // If the callback is not null the channel access does not block on a pend_io, 
                     // however a call is still required to flush the IO.
                     if (ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
                     {
-                        return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_EVDISALLOW));
+                        Console.WriteLine($"Error creating channel for {endPointArgs.EndPointID.EndPointName} - {EcaType.ECA_EVDISALLOW}");
+						return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_EVDISALLOW));
                     }
 
                     if (chCreateResult == EcaType.ECA_NORMAL)
@@ -136,13 +164,22 @@ namespace Convergence.IO.EPICS.CA
                         // Try add a new ID, if not already added.
                         endPointArgs.EndPointID.UniqueId = Guid.NewGuid();
                         if (!ConnectionsInstance.TryAdd(endPointArgs.EndPointID, settings))
+                        {
+                            Console.WriteLine($"Error adding channel for {endPointArgs.EndPointID.EndPointName} - {EcaType.ECA_NOSUPPORT}");
                             return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NEWCONN)); // New or resumed network connection
+                        }
                         else
-                            return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
+                        {
+
+                            Console.WriteLine($"Channel created for {endPointArgs.EndPointID.EndPointName} - {EcaType.ECA_NORMAL}");
+							return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_NORMAL));
+                        }
                     }
                     else
                     {
-                        return Task.FromResult(EcaTypeToEndPointStatus(chCreateResult));
+
+                        Console.WriteLine($"Error creating channel for {endPointArgs.EndPointID.EndPointName} - {chCreateResult}");
+						return Task.FromResult(EcaTypeToEndPointStatus(chCreateResult));
                     }
                 }
             }
@@ -163,9 +200,13 @@ namespace Convergence.IO.EPICS.CA
 				ChannelAccessWrapper.ca_clear_channel(ConnectionsInstance[endPointID].ChannelHandle);
 				ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
 				disconnected = ConnectionsInstance.Remove(endPointID, out _);
-            }
-            else
+				// Log endpointId has been removed from the dictionary.
+				Console.WriteLine($"EndPointID {endPointID.EndPointName} - {endPointID.UniqueId} has been removed from the dictionary.");
+			}
+			else
 			{
+				// Log endpointId does not exist in the dictionary.
+				Console.WriteLine($"EndPointID {endPointID.EndPointName} does not exist in the dictionary... Assume it is already disconnected.");
 				// If it doesn't exist, it is already disconnected.
 				disconnected = true;
 			}

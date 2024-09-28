@@ -21,22 +21,38 @@ namespace Convergence.IO.EPICS.CA
             {
                 var context = CANativeMethods.ca_current_context();
                 // Check if CurrentContext has been created
-                if (CurrentContext == nint.Zero)
+                if (CurrentContext == nint.Zero || CurrentContext != context)
                 {
-					CANativeMethods.ca_attach_context(context); 
-					// Store a record of the current context
-					CurrentContext = context;
-                }
-                // else if CurrentContext is not nint.Zero but not equal to context
-    //            else if (CurrentContext != context)
+                    if (context == nint.Zero)
+                    {
+                        CANativeMethods.ca_context_create(PreemptiveCallbacks.ENABLE);
+                        var contextNew = CANativeMethods.ca_current_context();
+                        CANativeMethods.ca_attach_context(contextNew);
+                        // Store a record of the current context
+                        CurrentContext = contextNew;
+                        // Log the creation of the context
+                        Console.WriteLine($"! TZ: CurrentContext has been created... {contextNew}");
+                        // Log old context
+                        Console.WriteLine($"! TZ: Old Context... {context}");
+					}
+					else
+					{
+						// Attach to a new context
+						CANativeMethods.ca_attach_context(context);
+						CurrentContext = context;
+						Console.WriteLine($"! TZ: CurrentContext has been created... {context}");
+					}
+				}
+				// else if CurrentContext is not nint.Zero but not equal to context
+				//else if (CurrentContext != context)
     //            {
-				//	// Destroy the CurrentContext
-				//	CANativeMethods.ca_context_destroy();
+    //                // Destroy the CurrentContext
+    //                CANativeMethods.ca_context_destroy();
     //                Console.WriteLine("! TZ: CurrentContext has been destroyed");
-				//	// Attach to a new context
-				//	CANativeMethods.ca_attach_context(context);
-				//	CurrentContext = context;
-				//}
+    //                // Attach to a new context
+    //                CANativeMethods.ca_attach_context(context);
+    //                CurrentContext = context;
+    //            }
                 else
                 {
                     // Do nothing
@@ -66,10 +82,16 @@ namespace Convergence.IO.EPICS.CA
                 throw new InvalidCastException("ca_context_create: Unable to cast EcaType from Int32");
             }
         }
+		
 
-        // Needed when you invoke a 'ca_' function on a worker thread
+        public static void ca_context_destroy()
+        {
+            CANativeMethods.ca_context_destroy();
+        }
 
-        public static nint ca_current_context()
+		// Needed when you invoke a 'ca_' function on a worker thread
+
+		public static nint ca_current_context()
         {
             return CANativeMethods.ca_current_context();
             

@@ -17,8 +17,7 @@ namespace Convergence.IO.EPICS.CA
 		// Returns :
 		//   ECA_NORMAL      - Normal successful completion
 		//   ECA_ALLOCMEM    - Failed, unable to allocate space in pool
-		//   ECA_NOTTHREADED - Current thread is already a member
-		//                     of a non-preemptive callback CA context
+		//   ECA_NOTTHREADED - Current thread is already a member of a non-preemptive callback CA context
 		// https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_context_create
 
 		// https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_current_context
