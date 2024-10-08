@@ -51,5 +51,13 @@ namespace Convergence.Interfaces
         /// <param name="callback"></param>
         /// <returns></returns>
         public Task<EndPointStatus> SubscribeAsync<T1, T2>(EndPointID endPointID, T1 monitorType, T2 callback);
+
+        /// <summary>
+        /// Asynchronously get metadata of the EndPointID and return an object of the specified type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endPointID"></param>
+        /// <returns></returns>
+        public Task<EndPointStatus> GetMetadataAsync<T>(EndPointID endPointID, Type dataType, T? callback);
     }
 }

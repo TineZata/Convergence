@@ -8,12 +8,14 @@ using Convergence.IO.EPICS.CA;
 using static Convergence.IO.EPICS.CA.EventCallbackDelegate;
 using System.Net;
 using System.Threading;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Convergence.IO.EPICS.CA
 {
     public class ConvergeOnEPICSChannelAccess : IConvergence
     {
-        public static readonly double EPICS_TIMEOUT_SEC = 0.15;
+        public static readonly double EPICS_TIMEOUT_SEC = 0.5;
 
         /// <summary>
         /// Singleton instance of Convergence on EPICS Channel Access.
@@ -90,7 +92,8 @@ namespace Convergence.IO.EPICS.CA
         {
             var settings = endPointArgs.Settings as Settings;
             var callback = connectCallback as ConnectCallback;
-            if (settings == null)
+
+			if (settings == null)
             {
                 return Task.FromResult(EndPointStatus.InvaildProtocol);
             }
@@ -107,37 +110,13 @@ namespace Convergence.IO.EPICS.CA
                 }
                 else
                 {
-                    // Log message that a new channel is being created
-                    Console.WriteLine($"Creating a new channel for {endPointArgs.EndPointID.EndPointName}");
-					// Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
-					var contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
-                    if (contextResult != EcaType.ECA_NORMAL)
+					// Log message that a new channel is being created
+					Console.WriteLine($"Creating a new channel for {endPointArgs.EndPointID.EndPointName}");
+					var contextResult = SetContext(endPointArgs.EndPointID.EndPointName!);
+                    if (contextResult.Result != EndPointStatus.Okay)
                     {
-                        if (contextResult == EcaType.ECA_NOTTHREADED)
-                        {
-							// Log message that ECA_NOTTHREADED was returned and the current thread is not a member of a non-preemptive callback CA context.
-							Console.WriteLine($"Error creating context for {endPointArgs.EndPointID.EndPointName} - {contextResult}, non-preemptive thread was created, but will be destroyed.");
-							// Current thread is already a member of a non-preemptive callback CA context (possibly created implicitly)
-							// Forcibly destroy the current context and attempt annother context_create
-							ChannelAccessWrapper.ca_context_destroy();
-							// Try another connect create
-							contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
-                            if (contextResult != EcaType.ECA_NORMAL)
-                            {
-								Console.WriteLine($"Error creating 2nd context for {endPointArgs.EndPointID.EndPointName} - {contextResult}");
-								return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
-							}
-						}
-						else
-                        {
-
-                            Console.WriteLine($"Error creating context for {endPointArgs.EndPointID.EndPointName} - {contextResult}");
-                            return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
-                        }
+                        return contextResult;
                     }
-
-                    // Do a ca_pend_event to make sure any residual events are cleared.
-                    ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
 
 					// Do connection with a connection callback.
 					EcaType chCreateResult = EcaType.ECA_DISCONN;
@@ -185,12 +164,43 @@ namespace Convergence.IO.EPICS.CA
             }
         }
 
-        /// <summary>
-        /// Handles the EPICS CA disconnection.
-        /// </summary>
-        /// <param name="endPointID"></param>
-        /// <returns></returns>
-        public Task <bool> DisconnectAsync(EndPointID endPointID)
+		private Task<EndPointStatus> SetContext(string name)
+		{
+			// Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
+			var contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
+			if (contextResult != EcaType.ECA_NORMAL)
+			{
+				if (contextResult == EcaType.ECA_NOTTHREADED)
+				{
+					// Log message that ECA_NOTTHREADED was returned and the current thread is not a member of a non-preemptive callback CA context.
+					Console.WriteLine($"Error creating context for {name} - {contextResult}, non-preemptive thread was created, but will be destroyed.");
+					// Current thread is already a member of a non-preemptive callback CA context (possibly created implicitly)
+					// Forcibly destroy the current context and attempt annother context_create
+					ChannelAccessWrapper.ca_context_destroy();
+					// Try another connect create
+					contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
+					if (contextResult != EcaType.ECA_NORMAL)
+					{
+						Console.WriteLine($"Error creating 2nd context for {name} - {contextResult}");
+						return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+					}
+				}
+				else
+				{
+					return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+				}
+				// Do a ca_pend_event to make sure any residual events are cleared.
+				ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
+			}
+			return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+		}
+
+		/// <summary>
+		/// Handles the EPICS CA disconnection.
+		/// </summary>
+		/// <param name="endPointID"></param>
+		/// <returns></returns>
+		public Task <bool> DisconnectAsync(EndPointID endPointID)
         {
             bool disconnected = false;
             if (ConnectionsInstance.ContainsKey(endPointID))
@@ -212,6 +222,89 @@ namespace Convergence.IO.EPICS.CA
 			}
 			return Task.FromResult(disconnected);
         }
+
+        public async Task<EndPointStatus> GetMetadataAsync<T>(EndPointID endPointID, Type dataType, T? callback)
+		{
+			
+			var cb = callback as ReadCtrlLongCallback;
+			if (cb == null)
+			{
+				return await Task.FromResult(EndPointStatus.InvalidDataType);
+			}
+            var ctrlType = Helpers.GetDBCtrlType(dataType);
+
+			//DbFieldType ctrlType = GetFieldTypeFromStruct<T1>();
+			//try
+			//{
+			if (!ConnectionsInstance.ContainsKey(endPointID))
+			{
+				return await Task.FromResult(EndPointStatus.InvalidName);
+			}
+
+			var epicsSettings = ConnectionsInstance[endPointID];
+			if (epicsSettings.ChannelHandle == nint.Zero)
+			{
+				return await Task.FromResult(EndPointStatus.InvalidName);
+			}
+
+			await SetContext(endPointID.EndPointName!);
+
+			//var getResult = ChannelAccessWrapper.ca_array_get(
+			//	pChanID: epicsSettings.ChannelHandle,
+			//	dbrType: ctrlType,
+			//	nElementsOfThatTypeWanted: epicsSettings.ElementCount,
+			//	pMemoryAllocatedToHoldDbrStruct: buffer);
+            var getResult = ChannelAccessWrapper.ca_array_get_long_meta_callback(
+				pChanID: epicsSettings.ChannelHandle,
+				type: ctrlType,
+				nElements: epicsSettings.ElementCount,
+				valueUpdateCallBack: cb);
+
+			if (ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
+			{
+				return await Task.FromResult(EndPointStatus.NoReadAccess);
+			}
+
+			ChannelAccessWrapper.ca_flush_io();
+
+			// Marshal the pointer back to the DBR_CTRL_INT structure
+			//T metaStruct = Marshal.PtrToStructure<T>(buffer);
+
+			return await Task.FromResult(EndPointStatus.Okay);
+			//}
+			//finally
+			//{
+			//	Marshal.FreeHGlobal(buffer);
+			//}
+		}
+
+		//private DbFieldType GetFieldTypeFromStruct<T>() where T : struct
+		//{
+		//	if (typeof(T) == typeof(DBR_CTRL_INT))
+		//	{
+		//		return DbFieldType.DBR_CTRL_INT;
+		//	}
+		//	else if (typeof(T) == typeof(DBR_CTRL_DOUBLE))
+		//	{
+		//		return DbFieldType.DBR_CTRL_DOUBLE;
+		//	}
+		//	else if (typeof(T) == typeof(DBR_CTRL_FLOAT))
+		//	{
+		//		return DbFieldType.DBR_CTRL_FLOAT;
+		//	}
+		//	else if (typeof(T) == typeof(DBR_CTRL_SHORT))
+		//	{
+		//		return DbFieldType.DBR_CTRL_SHORT;
+		//	}
+		//	else if (typeof(T) == typeof(DBR_CTRL_LONG))
+		//	{
+		//		return DbFieldType.DBR_CTRL_LONG;
+		//	}
+		//	else
+		//	{
+		//		return DbFieldType.DBR_CTRL_STRING;  // Default or fallback case
+		//	}
+		//}
 
 		/// <summary>
 		/// Handles the EPICS CA read.
@@ -241,17 +334,20 @@ namespace Convergence.IO.EPICS.CA
 					return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_BADFUNCPTR));
                 }
 
-                var getResult = ChannelAccessWrapper.ca_array_get_callback(
+                SetContext(endPointID.EndPointName!);
+
+				var getResult = ChannelAccessWrapper.ca_array_get_callback(
                 pChanID: epicsSettings.ChannelHandle,
                 type: epicsSettings.DataType,
                 nElements: epicsSettings.ElementCount,
                 valueUpdateCallBack: cb);
+
                 // Do the pend event to block until the callback is invoked.
                 if (ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
-					return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_EVDISALLOW));
+                    return Task.FromResult(EcaTypeToEndPointStatus(EcaType.ECA_EVDISALLOW));
                 if (getResult != EcaType.ECA_NORMAL)
                 {
-					return Task.FromResult(EcaTypeToEndPointStatus(getResult));
+                    return Task.FromResult(EcaTypeToEndPointStatus(getResult));
                 }
 
                 // Must call 'flush' otherwise the message isn't sent to the server
@@ -369,7 +465,7 @@ namespace Convergence.IO.EPICS.CA
             }
         }
 
-        EndPointStatus EcaTypeToEndPointStatus(EcaType eps)
+        static EndPointStatus EcaTypeToEndPointStatus(EcaType eps)
         {
             EndPointStatus status = EndPointStatus.UnknownError;
             switch (eps)

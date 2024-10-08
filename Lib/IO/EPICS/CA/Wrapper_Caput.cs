@@ -51,32 +51,27 @@ namespace Convergence.IO.EPICS.CA
 			EndPointStatus status = EndPointStatus.UnknownError;
 			// Starts off with a EndPoint connection to the PV
 			var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
-            var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, elementCount);
-            var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
-			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
-			if (connResult == EndPointStatus.Okay)
-			{
-				GCHandle handle;
-				if (type == typeof(string))
-				{
-					status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<CaputCallback>(endpoint,
-						Marshal.StringToHGlobalAnsi((string)value), callback);
-				}
-				else {
-					if (type == typeof(double))
-						handle = GCHandle.Alloc((double)value, GCHandleType.Pinned);
-					else if (type == typeof(float))
-						handle = GCHandle.Alloc((float)value, GCHandleType.Pinned);
-					else if (type == typeof(int))
-						handle = GCHandle.Alloc((int)value, GCHandleType.Pinned);
-					else if (type == typeof(short))
-						handle = GCHandle.Alloc((short)value, GCHandleType.Pinned);
-					else
-						handle = GCHandle.Alloc(value, GCHandleType.Pinned);
 
-					nint valuePtr = handle.AddrOfPinnedObject();
-					status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<CaputCallback>(endpoint, valuePtr, callback);
-				}
+			GCHandle handle;
+			if (type == typeof(string))
+			{
+				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<CaputCallback>(endpoint,
+					Marshal.StringToHGlobalAnsi((string)value), callback);
+			}
+			else {
+				if (type == typeof(double))
+					handle = GCHandle.Alloc((double)value, GCHandleType.Pinned);
+				else if (type == typeof(float))
+					handle = GCHandle.Alloc((float)value, GCHandleType.Pinned);
+				else if (type == typeof(int))
+					handle = GCHandle.Alloc((int)value, GCHandleType.Pinned);
+				else if (type == typeof(short))
+					handle = GCHandle.Alloc((short)value, GCHandleType.Pinned);
+				else
+					handle = GCHandle.Alloc(value, GCHandleType.Pinned);
+
+				nint valuePtr = handle.AddrOfPinnedObject();
+				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.WriteAsync<CaputCallback>(endpoint, valuePtr, callback);
 			}
 			
 			return status;

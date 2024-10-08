@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -9,33 +10,6 @@ namespace Convergence.IO.EPICS.CA
 {
 	public static partial class Wrapper
 	{
-
-		/// <summary>
-		/// EPICS caget async method, which specifies the PV name only.
-		/// Defult type is string.
-		/// Default element count is 1.
-		/// PV will be disconnected after reading the value.
-		/// </summary>
-		/// <param name="pvName"></param>
-		/// <returns></returns>
-		public static async Task<CagetValueSnapshot> CagetAsync(String pvName)
-		{
-			return await CagetAsync(pvName, typeof(string));
-		}
-
-		/// <summary>
-		/// EPICS caget async method, which specifies the PV name and the data type.
-		/// Default element count is 1.
-		/// PV will be disconnected after reading the value.
-		/// </summary>
-		/// <param name="pvName"></param>
-		/// <param name="type"></param>
-		/// <returns></returns>
-		public static async Task<CagetValueSnapshot> CagetAsync(String pvName, System.Type type)
-		{
-			return await CagetAsync(pvName, type, 1);
-		}
-
 		/// <summary>
 		/// EPICS caget async method, which specifies the PV name, the data type and the element count.
 		/// If disconnect is true, will disconnect after reading the value.
@@ -44,30 +18,20 @@ namespace Convergence.IO.EPICS.CA
 		/// <param name="type"></param>
 		/// <param name="elementCount"></param>
 		/// <returns></returns>
-		public static async Task<CagetValueSnapshot> CagetAsync(String pvName, System.Type type, int elementCount)
+		public static async Task<EndPointStatus> CagetAsync(String pvName, System.Type type, int elementCount, Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback? readCallback)
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
-			object value = null;
-			CagetValueSnapshot cagetSnapshot = new CagetValueSnapshot();
             // Starts off with a EndPoint connection to the PV
             var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
-			var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, elementCount);
-			var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
-			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
-			if (connResult == EndPointStatus.Okay)
-			{
-				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync<Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCallback>(endpoint, (EventCallbackDelegate.ReadCallback)((valueOut) =>
-				{
-					value = Convergence.IO.EPICS.CA.Helpers.DecodeEventData(valueOut);
-				}));
-				cagetSnapshot = new CagetValueSnapshot { Status = status, Value = value };
-			}
-			else
-			{
-				cagetSnapshot =  new CagetValueSnapshot { Status = status, Value = value};
-			}
-			
-			return cagetSnapshot;
+			status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ReadAsync(endpoint, readCallback);
+		
+			return status;
+		}
+
+		public static async Task<EndPointStatus> CagetControlLongMetaDataAsyncInt(string name, Type dataType,  Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCtrlLongCallback? readCallback)
+		{
+			EndPointID endPointID = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(name);
+			return await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetMetadataAsync(endPointID, dataType, readCallback);
 		}
 
 	}

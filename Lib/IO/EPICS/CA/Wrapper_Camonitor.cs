@@ -22,21 +22,20 @@ namespace Convergence.IO.EPICS.CA
 			Convergence.IO.EPICS.CA.EventCallbackDelegate.MonitorCallback monitorCallback)
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
-			CagetValueSnapshot cagetAsyncResult = new CagetValueSnapshot();
             // Starts off with a EndPoint connection to the PV
             var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
             var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
-			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
-			if (connResult == EndPointStatus.Okay)
-			{
-				status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.SubscribeAsync<MonitorTypes, Convergence.IO.EPICS.CA.EventCallbackDelegate.MonitorCallback>
-					(endpoint, MonitorTypes.MonitorValField, monitorCallback);
-			}
-			else
-			{
-				status = connResult;
-			}
+			//var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
+			//if (connResult == EndPointStatus.Okay)
+			//{
+			status = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.SubscribeAsync<MonitorTypes, Convergence.IO.EPICS.CA.EventCallbackDelegate.MonitorCallback>
+				(endpoint, MonitorTypes.MonitorValField, monitorCallback);
+			//}
+			//else
+			//{
+			//	status = connResult;
+			//}
 			return status;
 		}
 	}

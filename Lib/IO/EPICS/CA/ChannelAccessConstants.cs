@@ -1,7 +1,6 @@
 ﻿namespace Convergence.IO.EPICS.CA
 {
-
-    internal class ChannelAccessConstants
+    public class ChannelAccessConstants
     {
 
         // Use these flags in 'create_subscription' to specify

@@ -8,7 +8,7 @@ using static Convergence.IO.EPICS.CA.EventCallbackDelegate;
 
 namespace Convergence.IO.EPICS.CA
 {
-	public static partial class CANativeMethods
+	public static partial class CADLLMethods
 	{
 		private const string CA_DLL_NAME = "IO\\EPICS\\CA\\CA";
 
@@ -33,9 +33,9 @@ namespace Convergence.IO.EPICS.CA
 		// https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_attach_context
 		public static extern int ca_attach_context(nint pClientContext);
 
-		[LibraryImport(CA_DLL_NAME)]
+		[DllImport(CA_DLL_NAME)]
 		// https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_detach_context
-		public static partial void ca_detach_context();
+		public static extern void ca_detach_context();
 
 
 		[DllImport(CA_DLL_NAME)]
@@ -135,6 +135,15 @@ namespace Convergence.IO.EPICS.CA
 				  uint count,
 				  nint pChanID,
 				  ReadCallback pEventCallBack,
+				  nint userArg
+				);
+
+		[DllImport(CA_DLL_NAME)]
+		public static extern int ca_array_get_callback(
+				  short type,
+				  uint count,
+				  nint pChanID,
+				  ReadCtrlLongCallback pEventCallBack,
 				  nint userArg
 				);
 
@@ -262,8 +271,6 @@ namespace Convergence.IO.EPICS.CA
 		//   ECA_NORMAL - Normal successful completion
 		//   ECA_TIMEOUT - Selected IO requests didn't complete before specified timeout
 		//   ECA_EVDISALLOW - Function inappropriate for use within an event handler
-		// ??? Doc says : ca_pend_event returns ECA_TIMEOUT when successful. This behavior probably isn't intuitive,
-		// but it is preserved to insure backwards compatibility. WTF ??? !!!
 		// https://epics.anl.gov/base/R3-14/10-docs/CAref.html#L3249
 		// https://epics.anl.gov/base/R3-15/9-docs/CAref.html#ca_pend_event
 		public static extern int ca_pend_event(double timeOut_secs_zeroMeansInfinite);

@@ -48,12 +48,15 @@ namespace Convergence.IO.EPICS.CA
         public string RequestInfo => $"Requested {count} elements of type {type}";
     }
 
-    public class EventCallbackDelegate
+    public static class EventCallbackDelegate
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void ReadCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void ReadCtrlLongCallback(DBR_CTRL_LONG data);
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void WriteCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -63,6 +66,44 @@ namespace Convergence.IO.EPICS.CA
         public delegate void ConnectCallback(ConnectionEventCallbackArgs args);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        internal delegate void ExceptionHandlerCallback(ExceptionHandlerEventArgs args);
-    }
+        public delegate void ExceptionHandlerCallback(ExceptionHandlerEventArgs args);
+
+		//// Strong references to the delegates to prevent GC
+		//private ReadCallback _readCallback;
+		//private WriteCallback _writeCallback;
+		//private MonitorCallback _monitorCallback;
+		//private ConnectCallback _connectCallback;
+		//private ExceptionHandlerCallback _exceptionHandlerCallback;
+
+		//public void SetReadCallback(ReadCallback callback)
+		//{
+		//	_readCallback = callback; // Store the delegate in a field to prevent GC
+		//	IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(_readCallback);
+
+		//}
+
+		//public void SetWriteCallback(WriteCallback callback)
+		//{
+		//	_writeCallback = callback; // Store the delegate in a field to prevent GC
+		//	IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(_writeCallback);
+		//}
+
+		//public void SetMonitorCallback(MonitorCallback callback)
+		//{
+		//	_monitorCallback = callback; // Store the delegate in a field to prevent GC
+		//	IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(_monitorCallback);
+		//}
+
+		//public void SetConnectCallback(ConnectCallback callback)
+		//{
+		//	_connectCallback = callback; // Store the delegate in a field to prevent GC
+		//	IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(_connectCallback);
+		//}
+
+		//public void SetExceptionHandlerCallback(ExceptionHandlerCallback callback)
+		//{
+		//	_exceptionHandlerCallback = callback; // Store the delegate in a field to prevent GC
+		//	IntPtr callbackPtr = Marshal.GetFunctionPointerForDelegate(_exceptionHandlerCallback);
+		//}
+	}
 }
