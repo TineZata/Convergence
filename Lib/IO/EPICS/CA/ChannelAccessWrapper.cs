@@ -183,36 +183,36 @@ namespace Convergence.IO.EPICS.CA
         // GET AND PUT 
         // -----------
 
-        public unsafe static EcaType ca_array_get(
-          this nint pChanID,
-          DbFieldType dbrType,
-          int nElementsOfThatTypeWanted,
-          nint pMemoryAllocatedToHoldDbrStruct
-        )
-        {
-            try
-            {
+  //      public unsafe static EcaType ca_array_get(
+  //        this nint pChanID,
+  //        DbFieldType dbrType,
+  //        int nElementsOfThatTypeWanted,
+  //        nint pMemoryAllocatedToHoldDbrStruct
+  //      )
+  //      {
+  //          try
+  //          {
 
-                if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_array_get(
-                  (short)dbrType,
-                  (uint)nElementsOfThatTypeWanted,
-                  pChanID,
-                  pMemoryAllocatedToHoldDbrStruct
-                )).ToString(), out EcaType result))
-                {
-                    return result;
-                }
-                else
-                {
-                    return EcaType.ECA_GETFAIL;
-                }
+  //              if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_array_get(
+  //                (short)dbrType,
+  //                (uint)nElementsOfThatTypeWanted,
+  //                pChanID,
+  //                pMemoryAllocatedToHoldDbrStruct
+  //              )).ToString(), out EcaType result))
+  //              {
+  //                  return result;
+  //              }
+  //              else
+  //              {
+  //                  return EcaType.ECA_GETFAIL;
+  //              }
                 
-			}
-			catch (TaskCanceledException  ex)
-			{
-				throw new Exception("Error getting array", ex);
-			}
-		}
+		//	}
+		//	catch (TaskCanceledException  ex)
+		//	{
+		//		throw new Exception("Error getting array", ex);
+		//	}
+		//}
 
         public static EcaType ca_array_get_callback(
           this nint pChanID,
@@ -261,11 +261,11 @@ namespace Convergence.IO.EPICS.CA
 
 		}
 
-		public static EcaType ca_array_get_long_meta_callback(
+		public static EcaType ca_array_get(
 		  this nint pChanID,
 		  DbFieldType type,
 		  int nElements,
-		  ReadCtrlLongCallback valueUpdateCallBack
+		  nint pData
 		)
 		{
 			try
@@ -274,23 +274,12 @@ namespace Convergence.IO.EPICS.CA
 				if (CADLLMethods.ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
 				// Check that write access is allowed
 				if (!pChanID.ca_read_access()) return EcaType.ECA_NORDACCESS;
-				// Check that the data type is valid
-				var returnedType = pChanID.ca_field_type();
-				// If user defined type is DbFieldType.DBF_FLOAT_f32 the the return type can either be DBR_FLOAT or DBR_DOUBLE.
-				// Actually I've never observer a float type being returned, however this is possible according to the EPICS documentation when 
-				// PREC is set to the correct value.
-				bool isFloat = type == DbFieldType.DBF_FLOAT_f32 && (returnedType == (short)DbFieldType.DBF_FLOAT_f32 || returnedType == (short)DbFieldType.DBF_DOUBLE_f64);
-				if ((short)type != returnedType && !isFloat)
-					return EcaType.ECA_BADTYPE;
-				// assign userArg to ca_puser(pChanID)
-				var userArg = pChanID.ca_puser();
 				if (Enum.TryParse(CA_EXTRACT_MSG_NO(
-					CADLLMethods.ca_array_get_callback(
+					CADLLMethods.ca_array_get(
 					  (short)type,
 					  (uint)nElements,
 					  pChanID,
-					  valueUpdateCallBack,
-					  userArg)
+					  pData)
 					).ToString(), out EcaType result))
 				{
 					return result;

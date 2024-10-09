@@ -54,7 +54,7 @@ namespace Convergence.IO.EPICS.CA
         public delegate void ReadCallback(EventCallbackArgs data);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		public delegate void ReadCtrlLongCallback(DBR_CTRL_LONG data);
+		public delegate void ReadCtrlMetaCallback(nint pdata);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void WriteCallback(EventCallbackArgs data);

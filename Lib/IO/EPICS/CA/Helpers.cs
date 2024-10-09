@@ -114,7 +114,8 @@ namespace Convergence.IO.EPICS.CA
 					return DbFieldType.DBR_CTRL_CHAR;
 				case Type t when t == typeof(short):
 					return DbFieldType.DBR_CTRL_SHORT;
-				case Type t when t == typeof(int):
+				case Type type when type == typeof(int):
+				case Type t when t == typeof(long):
 					return DbFieldType.DBR_CTRL_LONG;
 				case Type t when t == typeof(float):
 					return DbFieldType.DBR_CTRL_FLOAT;
@@ -122,7 +123,7 @@ namespace Convergence.IO.EPICS.CA
 					return DbFieldType.DBR_CTRL_DOUBLE;
 				case Type t when t == typeof(string):
 				default:
-					return DbFieldType.DBR_CTRL_STRING;
+					return DbFieldType.DBR_CTRL_INT;
 			}
 		}
 

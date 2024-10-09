@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Convergence.IO.EPICS.CA
 {
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DBR_CTRL_INT
 	{
 		public Int16 status;         /* status of value */
@@ -25,7 +25,7 @@ namespace Convergence.IO.EPICS.CA
 		public Int16 value;          /* current value */
 	};
 
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DBR_CTRL_SHORT
 	{
 		public Int16 status;         /* status of value */
@@ -44,7 +44,7 @@ namespace Convergence.IO.EPICS.CA
 	};
 
 	/* structure for a control floating point field */
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DBR_CTRL_FLOAT
 	{
 		public Int16 status;         /* status of value */
@@ -104,7 +104,7 @@ namespace Convergence.IO.EPICS.CA
 	}
 
 	/* structure for a control enumeration field */
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DBR_CTRL_ENUM
 	{
 		public Int16 status;         /* status of value */
@@ -115,7 +115,7 @@ namespace Convergence.IO.EPICS.CA
 	};
 
 	/* structure for a control long field */
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DBR_CTRL_LONG
 	{
 		public Int16 status;         /* status of value */
@@ -134,7 +134,7 @@ namespace Convergence.IO.EPICS.CA
 	};
 
 	/* structure for a control double field */
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DBR_CTRL_DOUBLE
 	{
 		public Int16 status;         /* status of value */

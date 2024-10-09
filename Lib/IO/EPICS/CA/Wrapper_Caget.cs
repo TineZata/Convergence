@@ -28,10 +28,10 @@ namespace Convergence.IO.EPICS.CA
 			return status;
 		}
 
-		public static async Task<EndPointStatus> CagetControlLongMetaDataAsyncInt(string name, Type dataType,  Convergence.IO.EPICS.CA.EventCallbackDelegate.ReadCtrlLongCallback? readCallback)
+		public static async Task<EndPointStatus> CagetControlMetaDataAsync(string name, Type dataType,  nint pReadData)
 		{
 			EndPointID endPointID = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(name);
-			return await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetMetadataAsync(endPointID, dataType, readCallback);
+			return await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetMetadataAsync(endPointID, dataType, pReadData);
 		}
 
 	}

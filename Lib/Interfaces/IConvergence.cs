@@ -58,6 +58,6 @@ namespace Convergence.Interfaces
         /// <typeparam name="T"></typeparam>
         /// <param name="endPointID"></param>
         /// <returns></returns>
-        public Task<EndPointStatus> GetMetadataAsync<T>(EndPointID endPointID, Type dataType, T? callback);
+        public Task<EndPointStatus> GetMetadataAsync(EndPointID endPointID, Type dataType, nint pReadData);
     }
 }

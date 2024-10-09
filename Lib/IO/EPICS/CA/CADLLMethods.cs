@@ -143,7 +143,7 @@ namespace Convergence.IO.EPICS.CA
 				  short type,
 				  uint count,
 				  nint pChanID,
-				  ReadCtrlLongCallback pEventCallBack,
+				  ReadCtrlMetaCallback pEventCallBack,
 				  nint userArg
 				);
 

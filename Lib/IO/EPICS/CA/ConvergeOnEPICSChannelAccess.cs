@@ -15,7 +15,7 @@ namespace Convergence.IO.EPICS.CA
 {
     public class ConvergeOnEPICSChannelAccess : IConvergence
     {
-        public static readonly double EPICS_TIMEOUT_SEC = 0.5;
+        public static readonly double EPICS_TIMEOUT_SEC = 0.25;
 
         /// <summary>
         /// Singleton instance of Convergence on EPICS Channel Access.
@@ -166,6 +166,8 @@ namespace Convergence.IO.EPICS.CA
 
 		private Task<EndPointStatus> SetContext(string name)
 		{
+			EndPointStatus status = EndPointStatus.UnknownError;
+			
 			// Always call ca_context_create() before any other Channel Access calls from the thread you want to use Channel Access from.
 			var contextResult = ChannelAccessWrapper.ca_context_create(PreemptiveCallbacks.ENABLE);
 			if (contextResult != EcaType.ECA_NORMAL)
@@ -182,17 +184,20 @@ namespace Convergence.IO.EPICS.CA
 					if (contextResult != EcaType.ECA_NORMAL)
 					{
 						Console.WriteLine($"Error creating 2nd context for {name} - {contextResult}");
-						return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+						status = EcaTypeToEndPointStatus(contextResult);
 					}
 				}
 				else
 				{
-					return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+					status = EcaTypeToEndPointStatus(contextResult);
 				}
-				// Do a ca_pend_event to make sure any residual events are cleared.
-				ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
 			}
-			return Task.FromResult(EcaTypeToEndPointStatus(contextResult));
+
+			// Do a ca_pend_event to make sure any residual events are cleared.
+			ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC);
+            status = EcaTypeToEndPointStatus(contextResult);
+
+			return Task.FromResult(status);
 		}
 
 		/// <summary>
@@ -223,19 +228,9 @@ namespace Convergence.IO.EPICS.CA
 			return Task.FromResult(disconnected);
         }
 
-        public async Task<EndPointStatus> GetMetadataAsync<T>(EndPointID endPointID, Type dataType, T? callback)
+        public async Task<EndPointStatus> GetMetadataAsync(EndPointID endPointID, Type dataType, nint pReadData)
 		{
-			
-			var cb = callback as ReadCtrlLongCallback;
-			if (cb == null)
-			{
-				return await Task.FromResult(EndPointStatus.InvalidDataType);
-			}
-            var ctrlType = Helpers.GetDBCtrlType(dataType);
-
-			//DbFieldType ctrlType = GetFieldTypeFromStruct<T1>();
-			//try
-			//{
+           
 			if (!ConnectionsInstance.ContainsKey(endPointID))
 			{
 				return await Task.FromResult(EndPointStatus.InvalidName);
@@ -246,65 +241,30 @@ namespace Convergence.IO.EPICS.CA
 			{
 				return await Task.FromResult(EndPointStatus.InvalidName);
 			}
-
+			
 			await SetContext(endPointID.EndPointName!);
 
-			//var getResult = ChannelAccessWrapper.ca_array_get(
-			//	pChanID: epicsSettings.ChannelHandle,
-			//	dbrType: ctrlType,
-			//	nElementsOfThatTypeWanted: epicsSettings.ElementCount,
-			//	pMemoryAllocatedToHoldDbrStruct: buffer);
-            var getResult = ChannelAccessWrapper.ca_array_get_long_meta_callback(
+            var initialPend = ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
+            if (initialPend != EcaType.ECA_NORMAL)
+                return EndPointStatus.ReadFailed;
+
+
+            EcaType getResult = ChannelAccessWrapper.ca_array_get(
 				pChanID: epicsSettings.ChannelHandle,
-				type: ctrlType,
-				nElements: epicsSettings.ElementCount,
-				valueUpdateCallBack: cb);
+				type: Helpers.GetDBCtrlType(dataType),
+				nElements: 1,
+                pData: pReadData);
 
-			if (ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC) == EcaType.ECA_EVDISALLOW)
+			getResult = ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
+            if (getResult != EcaType.ECA_NORMAL)
 			{
-				return await Task.FromResult(EndPointStatus.NoReadAccess);
+				return await Task.FromResult(EndPointStatus.ReadFailed);
 			}
+			ChannelAccessWrapper.ca_pend_event(1);
 
-			ChannelAccessWrapper.ca_flush_io();
-
-			// Marshal the pointer back to the DBR_CTRL_INT structure
-			//T metaStruct = Marshal.PtrToStructure<T>(buffer);
-
-			return await Task.FromResult(EndPointStatus.Okay);
-			//}
-			//finally
-			//{
-			//	Marshal.FreeHGlobal(buffer);
-			//}
+			return await Task.FromResult(EcaTypeToEndPointStatus(getResult));
 		}
 
-		//private DbFieldType GetFieldTypeFromStruct<T>() where T : struct
-		//{
-		//	if (typeof(T) == typeof(DBR_CTRL_INT))
-		//	{
-		//		return DbFieldType.DBR_CTRL_INT;
-		//	}
-		//	else if (typeof(T) == typeof(DBR_CTRL_DOUBLE))
-		//	{
-		//		return DbFieldType.DBR_CTRL_DOUBLE;
-		//	}
-		//	else if (typeof(T) == typeof(DBR_CTRL_FLOAT))
-		//	{
-		//		return DbFieldType.DBR_CTRL_FLOAT;
-		//	}
-		//	else if (typeof(T) == typeof(DBR_CTRL_SHORT))
-		//	{
-		//		return DbFieldType.DBR_CTRL_SHORT;
-		//	}
-		//	else if (typeof(T) == typeof(DBR_CTRL_LONG))
-		//	{
-		//		return DbFieldType.DBR_CTRL_LONG;
-		//	}
-		//	else
-		//	{
-		//		return DbFieldType.DBR_CTRL_STRING;  // Default or fallback case
-		//	}
-		//}
 
 		/// <summary>
 		/// Handles the EPICS CA read.
