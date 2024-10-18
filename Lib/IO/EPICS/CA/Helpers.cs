@@ -97,7 +97,9 @@ namespace Convergence.IO.EPICS.CA
                     return DbFieldType.DBF_FLOAT_f32;
                 case Type t when t == typeof(double):
                     return DbFieldType.DBF_DOUBLE_f64;
-                case Type t when t == typeof(string):
+                case Type t when t == typeof(long):
+					return DbFieldType.DBF_LONG_i32;
+				case Type t when t == typeof(string):
                 default:
                     return DbFieldType.DBF_STRING_s39;
             }

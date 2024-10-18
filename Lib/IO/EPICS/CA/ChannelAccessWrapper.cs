@@ -15,7 +15,7 @@ namespace Convergence.IO.EPICS.CA
 
         public static nint CurrentContext { get; private set; }
 
-        private static void set_current_context()
+        private unsafe static void set_current_context()
         {
             try
             {
@@ -71,7 +71,7 @@ namespace Convergence.IO.EPICS.CA
         /// <param name="preemptive"></param>
         /// <returns></returns>
         /// <exception cref="InvalidCastException"></exception>
-        public static EcaType ca_context_create(PreemptiveCallbacks preemptive)
+        public unsafe static EcaType ca_context_create(PreemptiveCallbacks preemptive)
         {
             if (Enum.TryParse<EcaType>(CA_EXTRACT_MSG_NO(CADLLMethods.ca_context_create(preemptive)).ToString(), out EcaType result))
             {
@@ -84,20 +84,20 @@ namespace Convergence.IO.EPICS.CA
         }
 		
 
-        public static void ca_context_destroy()
+        public unsafe static void ca_context_destroy()
         {
             CADLLMethods.ca_context_destroy();
         }
 
 		// Needed when you invoke a 'ca_' function on a worker thread
 
-		public static nint ca_current_context()
+		public unsafe static nint ca_current_context()
         {
             return CADLLMethods.ca_current_context();
             
         }
 
-        public static EcaType ca_attach_context(this nint context)
+        public unsafe static EcaType ca_attach_context(this nint context)
         {
             // Try Parse Enum of type <EcaType> from Int32 return by (ca_attach_context(context))
             if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_attach_context(context)).ToString(), out EcaType result))
@@ -115,7 +115,7 @@ namespace Convergence.IO.EPICS.CA
         // CHANNEL
         // -------
 
-        public static EcaType ca_create_channel(
+        public unsafe static EcaType ca_create_channel(
           string channelName,
           ConnectCallback? connectionCallback,
           out nint pChannel
@@ -139,7 +139,7 @@ namespace Convergence.IO.EPICS.CA
             }
 		}
 
-        public static EcaType ca_clear_channel(nint pChanID)
+        public unsafe static EcaType ca_clear_channel(nint pChanID)
         {
             try
             {
@@ -167,12 +167,12 @@ namespace Convergence.IO.EPICS.CA
         // CHANNEL STATE
         // -------------
 
-        public static ChannelState ca_state(nint pChanID)
+        public unsafe static ChannelState ca_state(nint pChanID)
         {
             return CADLLMethods.ca_state(pChanID);
         }
 
-        public static string ca_host_name(nint pChanID)
+        public unsafe static string ca_host_name(nint pChanID)
         {
             return Marshal.PtrToStringAnsi(
               CADLLMethods.ca_host_name(pChanID)
@@ -183,38 +183,38 @@ namespace Convergence.IO.EPICS.CA
         // GET AND PUT 
         // -----------
 
-  //      public unsafe static EcaType ca_array_get(
-  //        this nint pChanID,
-  //        DbFieldType dbrType,
-  //        int nElementsOfThatTypeWanted,
-  //        nint pMemoryAllocatedToHoldDbrStruct
-  //      )
-  //      {
-  //          try
-  //          {
+        //public unsafe static EcaType ca_array_get(
+        //  this nint pChanID,
+        //  DbFieldType dbrType,
+        //  int nElementsOfThatTypeWanted,
+        //  nint pMemoryAllocatedToHoldDbrStruct
+        //)
+        //{
+        //    try
+        //    {
 
-  //              if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_array_get(
-  //                (short)dbrType,
-  //                (uint)nElementsOfThatTypeWanted,
-  //                pChanID,
-  //                pMemoryAllocatedToHoldDbrStruct
-  //              )).ToString(), out EcaType result))
-  //              {
-  //                  return result;
-  //              }
-  //              else
-  //              {
-  //                  return EcaType.ECA_GETFAIL;
-  //              }
-                
-		//	}
-		//	catch (TaskCanceledException  ex)
-		//	{
-		//		throw new Exception("Error getting array", ex);
-		//	}
-		//}
+        //        if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_array_get(
+        //          (short)dbrType,
+        //          (uint)nElementsOfThatTypeWanted,
+        //          pChanID,
+        //          pMemoryAllocatedToHoldDbrStruct
+        //        )).ToString(), out EcaType result))
+        //        {
+        //            return result;
+        //        }
+        //        else
+        //        {
+        //            return EcaType.ECA_GETFAIL;
+        //        }
 
-        public static EcaType ca_array_get_callback(
+        //    }
+        //    catch (TaskCanceledException ex)
+        //    {
+        //        throw new Exception("Error getting array", ex);
+        //    }
+        //}
+
+        public unsafe static EcaType ca_array_get_callback(
           this nint pChanID,
           DbFieldType type,
           int nElements,
@@ -261,7 +261,7 @@ namespace Convergence.IO.EPICS.CA
 
 		}
 
-		public static EcaType ca_array_get(
+		public unsafe static EcaType ca_array_get(
 		  this nint pChanID,
 		  DbFieldType type,
 		  int nElements,
@@ -271,9 +271,9 @@ namespace Convergence.IO.EPICS.CA
 			try
 			{
 				// Check that the channel is connected
-				if (CADLLMethods.ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
+				//if (CADLLMethods.ca_state(pChanID) != ChannelState.CurrentlyConnected) return EcaType.ECA_DISCONN;
 				// Check that write access is allowed
-				if (!pChanID.ca_read_access()) return EcaType.ECA_NORDACCESS;
+				//if (!pChanID.ca_read_access()) return EcaType.ECA_NORDACCESS;
 				if (Enum.TryParse(CA_EXTRACT_MSG_NO(
 					CADLLMethods.ca_array_get(
 					  (short)type,
@@ -411,7 +411,7 @@ namespace Convergence.IO.EPICS.CA
             
         }
 
-        public static EcaType ca_clear_subscription(this nint pChanID)
+        public unsafe static EcaType ca_clear_subscription(this nint pChanID)
         {
             if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_clear_subscription(pChanID)).ToString(), out EcaType result))
             {
@@ -428,7 +428,7 @@ namespace Convergence.IO.EPICS.CA
         // FLUSH_IO etc
         // ------------
 
-        public static EcaType ca_flush_io()
+        public unsafe static EcaType ca_flush_io()
         {
             if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_flush_io()).ToString(), out EcaType result))
             {
@@ -442,7 +442,7 @@ namespace Convergence.IO.EPICS.CA
         }
 
 
-        public static EcaType ca_pend_io(double timeOut_secs_zeroMeansInfinite)
+        public unsafe static EcaType ca_pend_io(double timeOut_secs_zeroMeansInfinite)
         {
             if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_pend_io(timeOut_secs_zeroMeansInfinite)).ToString(), out EcaType result))
             {
@@ -452,11 +452,9 @@ namespace Convergence.IO.EPICS.CA
             {
                 throw new InvalidCastException("ca_pend_io: Unable to cast EcaType from Int32");
             }
-
-            
         }
 
-        public static EcaType ca_test_io()
+        public unsafe static EcaType ca_test_io()
         {
             if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_test_io()).ToString(), out EcaType result))
             {
@@ -466,12 +464,10 @@ namespace Convergence.IO.EPICS.CA
             {
                 throw new InvalidCastException("ca_test_io: Unable to cast EcaType from Int32");
             }
-            
         }
 
-        public static EcaType ca_pend_event(double nSecsToBlock_zeroMeansInfinite)
+        public unsafe static EcaType ca_pend_event(double nSecsToBlock_zeroMeansInfinite)
         {
-
             if (Enum.TryParse(CA_EXTRACT_MSG_NO(CADLLMethods.ca_pend_event(nSecsToBlock_zeroMeansInfinite)).ToString(), out EcaType result))
             {
                 return result;
@@ -479,8 +475,7 @@ namespace Convergence.IO.EPICS.CA
             else
             {
                 throw new InvalidCastException("ca_pend_event: Unable to cast EcaType from Int32");
-            }
-            
+            }   
         }
 
         // -------
@@ -492,17 +487,14 @@ namespace Convergence.IO.EPICS.CA
 
         // This tells us the *max* number of elements that the server will deal with.
 
-        public static uint ca_element_count(this nint pChanID)
+        public unsafe static uint ca_element_count(this nint pChanID)
         {
             return CADLLMethods.ca_element_count(pChanID);
-            
         }
 
-        public static short ca_field_type(this nint pChanID)
+        public unsafe static short ca_field_type(this nint pChanID)
         {
             return CADLLMethods.ca_field_type(pChanID);
-
-            
         }
 
         // If we have write access, do we always have 'read' access ??
@@ -510,47 +502,42 @@ namespace Convergence.IO.EPICS.CA
         // but the value itself isn't readable ?
         // In that case, we probably need a special FieldType ???
 
-        public static bool ca_read_access(this nint pChanID)
+        public unsafe static bool ca_read_access(this nint pChanID)
         {
             return CADLLMethods.ca_read_access(pChanID) != 0;
-            
         }
 
-        public static bool ca_write_access(this nint pChanID)
+        public unsafe static bool ca_write_access(this nint pChanID)
         {
             return CADLLMethods.ca_write_access(pChanID) != 0;
-            
         }
 
-        public static string ca_name(this nint pChanID)
+        public unsafe static string ca_name(this nint pChanID)
         {
             return Marshal.PtrToStringAnsi(
 			  CADLLMethods.ca_name(pChanID)
             )!;
-            
         }
 
         // Get the 'user info tag' associated with the channel
 
-        public static nint ca_puser(this nint pChanID)
+        public unsafe static nint ca_puser(this nint pChanID)
         {
             return (int)CADLLMethods.ca_puser(pChanID);
-            
         }
 
         // Set the 'user info tag' associated with the channel
 
-        public static void ca_set_puser(this nint pChanID, nint userInfo)
+        public unsafe static void ca_set_puser(this nint pChanID, nint userInfo)
         {
             CADLLMethods.ca_set_puser(pChanID, userInfo);
-            
         }
 
         // Get the 'beacon period' for the channel.
         // Hmm, this might be useful to know, however the value comes back as a junk value
         // even if we wait until the channel has been successfully connected-to ...
 
-        public static double ca_beacon_period(this nint pChanID)
+        public unsafe static double ca_beacon_period(this nint pChanID)
         {
             return CADLLMethods.ca_beacon_period(pChanID);
         }

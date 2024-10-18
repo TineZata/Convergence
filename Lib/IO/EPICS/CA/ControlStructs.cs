@@ -133,6 +133,34 @@ namespace Convergence.IO.EPICS.CA
 		public Int32 value;           /* current value */
 	};
 
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct DBR_STS_STRING
+	{
+		public Int16 status;         /* status of value */
+		public Int16 severity;       /* severity of alarm */
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = ChannelAccessConstants.MAX_STRING_SIZE)]
+		public char[] value;         /* current value */
+	};
+
+	//[StructLayout(LayoutKind.Explicit)]
+	//public unsafe struct DBR_CTRL_LONG
+	//{
+	//	[FieldOffset(0)] public short status;               // 2 bytes at offset 0
+	//	[FieldOffset(2)] public short severity;             // 2 bytes at offset 2
+
+	//	[FieldOffset(4)] public fixed byte units[8];                                 // 8 bytes starting at offset 4
+
+	//	[FieldOffset(12)] public int upper_disp_limit;      // 4 bytes at offset 12
+	//	[FieldOffset(16)] public int lower_disp_limit;      // 4 bytes at offset 16
+	//	[FieldOffset(20)] public int upper_alarm_limit;     // 4 bytes at offset 20
+	//	[FieldOffset(24)] public int lower_alarm_limit;     // 4 bytes at offset 24
+	//	[FieldOffset(28)] public int upper_warning_limit;   // 4 bytes at offset 28
+	//	[FieldOffset(32)] public int lower_warning_limit;   // 4 bytes at offset 32
+	//	[FieldOffset(36)] public int upper_ctrl_limit;      // 4 bytes at offset 36
+	//	[FieldOffset(40)] public int lower_ctrl_limit;      // 4 bytes at offset 40
+	//	[FieldOffset(44)] public int value;      // 4 bytes at offset 44
+	//}
+
 	/* structure for a control double field */
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DBR_CTRL_DOUBLE

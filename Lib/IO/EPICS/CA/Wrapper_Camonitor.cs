@@ -23,8 +23,8 @@ namespace Convergence.IO.EPICS.CA
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
             // Starts off with a EndPoint connection to the PV
-            var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
-            var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, 1);
+            var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetOrCreateEndPoint(pvName);
+            var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetOrCreateEndPointSettings(endpoint, type, 1);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
 			//var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, _nullConnectionCallback);
 			//if (connResult == EndPointStatus.Okay)

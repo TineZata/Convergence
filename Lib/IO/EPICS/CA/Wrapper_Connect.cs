@@ -55,8 +55,8 @@ namespace Convergence.IO.EPICS.CA
 		/// <returns></returns>
 		public static async Task<EndPointStatus> ConnectAsync(String pvName, System.Type type, int elements, Convergence.IO.EPICS.CA.EventCallbackDelegate.ConnectCallback? connectCallback)
 		{
-            var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
-            var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointSettings(endpoint, type, elements);
+            var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetOrCreateEndPoint(pvName);
+            var epicsSettings = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetOrCreateEndPointSettings(endpoint, type, elements);
             var endPointArgs = new EndPointBase<Convergence.IO.EPICS.CA.Settings> { EndPointID = endpoint, Settings = epicsSettings };
 			var connResult = await Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.ConnectAsync(endPointArgs, connectCallback);
 			return connResult;

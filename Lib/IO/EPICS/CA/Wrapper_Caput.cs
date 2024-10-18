@@ -50,7 +50,7 @@ namespace Convergence.IO.EPICS.CA
 		{
 			EndPointStatus status = EndPointStatus.UnknownError;
 			// Starts off with a EndPoint connection to the PV
-			var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetEpicsCaEndPointID(pvName);
+			var endpoint = Convergence.IO.EPICS.CA.ConvergeOnEPICSChannelAccess.Hub.GetOrCreateEndPoint(pvName);
 
 			GCHandle handle;
 			if (type == typeof(string))

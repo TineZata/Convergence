@@ -10,6 +10,7 @@ using System.Net;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using System.Reflection;
 
 namespace Convergence.IO.EPICS.CA
 {
@@ -38,28 +39,45 @@ namespace Convergence.IO.EPICS.CA
 			get => _epics_ca_connections!;
 		}
 
-        // Get EndPointID from the dictionary using the PV name.
-        public EndPointID GetEpicsCaEndPointID(string pvName)
+        // Get or Create EndPointID from the dictionary using the PV name.
+        public EndPointID GetOrCreateEndPoint(string pvName)
         {
-            var epicsSettings = ConnectionsInstance.FirstOrDefault(x => x.Key.EndPointName == pvName);
-            if (epicsSettings.Key == null)
-                return new EndPointID(Protocols.EPICS_CA, pvName);
+            var endPoint = GetEndPoint(pvName);
+            if (endPoint == null)
+				return CreateEndPoint(pvName);
             else
-            return epicsSettings.Key;
+                return endPoint;
         }
 
-        public Settings GetEpicsCaEndPointSettings(EndPointID endPointID, System.Type type, int elements)
+		// Get EndPointID from the dictionary using the PV name.
+		public EndPointID GetEndPoint(string pvName)
+		{
+			var epicsSettings = ConnectionsInstance.FirstOrDefault(x => x.Key.EndPointName == pvName);
+			return epicsSettings.Key;
+		}
+
+		public EndPointID CreateEndPoint(string pvName)
+		{
+			return new EndPointID(Protocols.EPICS_CA, pvName);
+		}
+
+		public Settings GetOrCreateEndPointSettings(EndPointID endPointID, System.Type type, int elements)
         {
             if (ConnectionsInstance.ContainsKey(endPointID))
                 return ConnectionsInstance[endPointID];
             else
-                return new Settings(Helpers.GetDBFieldType(type), elements);
+                return CreateEndPointSettings(type, elements);
         }
 
-        /// <summary>
-        /// Network communication hub, which keeps track of all the connections on all EPICS Channels Access endpoints.
-        /// </summary>
-        public static ConvergeOnEPICSChannelAccess Hub
+        public Settings CreateEndPointSettings(System.Type type, int elements)
+		{
+			return new Settings(Helpers.GetDBFieldType(type), elements);
+		}
+
+		/// <summary>
+		/// Network communication hub, which keeps track of all the connections on all EPICS Channels Access endpoints.
+		/// </summary>
+		public static ConvergeOnEPICSChannelAccess Hub
         {
 			get
 			{
@@ -228,26 +246,21 @@ namespace Convergence.IO.EPICS.CA
 			return Task.FromResult(disconnected);
         }
 
-        public async Task<EndPointStatus> GetMetadataAsync(EndPointID endPointID, Type dataType, nint pReadData)
+        public Task<EndPointStatus> GetMetadataAsync(EndPointID endPointID, Type dataType, nint pReadData)
 		{
            
 			if (!ConnectionsInstance.ContainsKey(endPointID))
 			{
-				return await Task.FromResult(EndPointStatus.InvalidName);
+				return Task.FromResult(EndPointStatus.InvalidName);
 			}
 
 			var epicsSettings = ConnectionsInstance[endPointID];
 			if (epicsSettings.ChannelHandle == nint.Zero)
 			{
-				return await Task.FromResult(EndPointStatus.InvalidName);
+				return Task.FromResult(EndPointStatus.InvalidName);
 			}
 			
-			await SetContext(endPointID.EndPointName!);
-
-            var initialPend = ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
-            if (initialPend != EcaType.ECA_NORMAL)
-                return EndPointStatus.ReadFailed;
-
+			SetContext(endPointID.EndPointName!);
 
             EcaType getResult = ChannelAccessWrapper.ca_array_get(
 				pChanID: epicsSettings.ChannelHandle,
@@ -255,14 +268,12 @@ namespace Convergence.IO.EPICS.CA
 				nElements: 1,
                 pData: pReadData);
 
-			getResult = ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
+			getResult = ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC*30);
             if (getResult != EcaType.ECA_NORMAL)
 			{
-				return await Task.FromResult(EndPointStatus.ReadFailed);
+				return Task.FromResult(EndPointStatus.ReadFailed);
 			}
-			ChannelAccessWrapper.ca_pend_event(1);
-
-			return await Task.FromResult(EcaTypeToEndPointStatus(getResult));
+			return Task.FromResult(EcaTypeToEndPointStatus(getResult));
 		}
 
 
