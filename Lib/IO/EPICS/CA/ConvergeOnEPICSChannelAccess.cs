@@ -16,7 +16,7 @@ namespace Convergence.IO.EPICS.CA
 {
     public class ConvergeOnEPICSChannelAccess : IConvergence
     {
-        public static readonly double EPICS_TIMEOUT_SEC = 0.25;
+        public static readonly double EPICS_TIMEOUT_SEC = 1.0;
 
         /// <summary>
         /// Singleton instance of Convergence on EPICS Channel Access.
@@ -268,8 +268,11 @@ namespace Convergence.IO.EPICS.CA
 				nElements: 1,
                 pData: pReadData);
 
-			getResult = ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC*30);
-            if (getResult != EcaType.ECA_NORMAL)
+			getResult = ChannelAccessWrapper.ca_pend_io(EPICS_TIMEOUT_SEC);
+			// Pend event is blocking so reduce the timeout to a quarter.
+			ChannelAccessWrapper.ca_pend_event(EPICS_TIMEOUT_SEC/4);
+
+			if (getResult != EcaType.ECA_NORMAL)
 			{
 				return Task.FromResult(EndPointStatus.ReadFailed);
 			}
